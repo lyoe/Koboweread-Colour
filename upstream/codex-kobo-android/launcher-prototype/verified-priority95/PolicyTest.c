@@ -1,0 +1,4 @@
+#include <assert.h>
+#include <stdio.h>
+#include "priority-policy.h"
+int main(void){struct request95 r;uint32_t words[14];int32_t a[]={1,120,10007,900};for(int i=0;i<4;i++)words[i]=htonl((uint32_t)a[i]);assert(!decode95(words,16,&r)&&r.pid==120&&r.score==900);assert(decode95(words,15,&r));words[3]=htonl(1001);assert(decode95(words,16,&r));words[3]=htonl(0);words[2]=htonl(0);assert(decode95(words,16,&r));words[2]=htonl(10007);words[1]=htonl(1);assert(decode95(words,16,&r));uint32_t config[]={htonl(0),htonl(100),htonl(0),htonl(200),htonl(900)};assert(!decode95(config,sizeof(config),&r)&&r.pairs==2);config[3]=htonl(99);assert(decode95(config,sizeof(config),&r));words[0]=htonl(3);assert(decode95(words,16,&r));assert(decode95(words,56,&r));puts("PRIORITY95_PROTOCOL_BOUNDS_ENDIAN_UID_PID_SCORE_AND_ORDER_OK");}

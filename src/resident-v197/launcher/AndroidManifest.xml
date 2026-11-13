@@ -1,0 +1,14 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.kobo.lab.smoke" android:versionCode="1" android:versionName="0.1" coreApp="true">
+    <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="24" />
+    <application android:name=".ProbeApplication" android:label="Kobo Activity Probe"
+        android:persistent="false" android:directBootAware="true" android:allowBackup="false"
+        android:hardwareAccelerated="false">
+        <activity android:name=".HomeActivity" android:exported="true" android:directBootAware="true" android:launchMode="singleTask" android:taskAffinity="com.kobo.lab.home">
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.HOME" /><category android:name="android.intent.category.DEFAULT" /></intent-filter>
+        </activity>
+        <activity android:name=".ProbeActivity" android:exported="true" android:directBootAware="true">
+            <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
+        </activity>
+    </application>
+</manifest>

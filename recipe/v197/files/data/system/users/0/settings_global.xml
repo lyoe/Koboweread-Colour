@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<settings version="127">
+  <setting id="41" name="low_battery_sound_timeout" value="0" package="android" />
+  <setting id="32" name="car_undock_sound" value="/system/media/audio/ui/Undock.ogg" package="android" />
+  <setting id="45" name="volte_vt_enabled" value="1" package="android" />
+  <setting id="375" name="window_animation_scale" value="0.0" package="android" />
+  <setting id="10" name="mode_ringer" value="2" package="android" />
+  <setting id="36" name="default_install_location" value="0" package="android" />
+  <setting id="22" name="wifi_display_on" value="0" package="android" />
+  <setting id="44" name="device_name" value="sdk_phone_armv7" package="android" />
+  <setting id="13" name="wifi_networks_available_notification_on" value="1" package="android" />
+  <setting id="14" name="bluetooth_on" value="0" package="android" />
+  <setting id="18" name="mobile_data" value="1" package="android" />
+  <setting id="37" name="emergency_tone" value="0" package="android" />
+  <setting id="46" name="add_users_when_locked" value="0" package="android" />
+  <setting id="34" name="dock_audio_media_enabled" value="1" package="android" />
+  <setting id="25" name="trusted_sound" value="/system/media/audio/ui/Trusted.ogg" package="android" />
+  <setting id="24" name="unlock_sound" value="/system/media/audio/ui/Unlock.ogg" package="android" />
+  <setting id="3" name="airplane_mode_radios" value="cell,bluetooth,wifi,nfc,wimax" package="android" />
+  <setting id="689" name="kobo_lab_probe" package="android" />
+  <setting id="21" name="wifi_max_dhcp_retry_count" value="9" package="android" />
+  <setting id="4" name="airplane_mode_toggleable_radios" value="bluetooth,wifi,nfc" package="android" />
+  <setting id="43" name="heads_up_notifications_enabled" value="1" package="android" />
+  <setting id="39" name="preferred_network_mode" value="0" package="android" />
+  <setting id="47" name="bluetooth_disabled_profiles" value="0" package="android" />
+  <setting id="30" name="desk_undock_sound" value="/system/media/audio/ui/Undock.ogg" package="android" />
+  <setting id="94" name="webview_provider" value="com.android.webview" package="android" />
+  <setting id="9" name="wifi_sleep_policy" value="2" package="android" />
+  <setting id="28" name="dock_sounds_enabled" value="0" package="android" />
+  <setting id="42" name="wifi_scan_always_enabled" value="0" package="android" />
+  <setting id="31" name="car_dock_sound" value="/system/media/audio/ui/Dock.ogg" package="android" />
+  <setting id="26" name="power_sounds_enabled" value="1" package="android" />
+  <setting id="8" name="stay_on_while_plugged_in" value="0" package="android" />
+  <setting id="218" name="zen_mode_config_etag" value="-824496295" package="android" />
+  <setting id="35" name="set_install_location" value="0" package="android" />
+  <setting id="215" name="zen_mode" value="0" package="android" />
+  <setting id="376" name="transition_animation_scale" value="0.0" package="android" />
+  <setting id="16" name="data_roaming" value="0" package="android" />
+  <setting id="11" name="package_verifier_enable" value="1" package="android" />
+  <setting id="2" name="theater_mode_on" value="0" package="android" />
+  <setting id="15" name="cdma_cell_broadcast_sms" value="1" package="android" />
+  <setting id="1" name="airplane_mode_on" value="0" package="android" />
+  <setting id="27" name="low_battery_sound" value="/system/media/audio/ui/LowBattery.ogg" package="android" />
+  <setting id="19" name="netstats_enabled" value="1" package="android" />
+  <setting id="40" name="subscription_mode" value="0" package="android" />
+  <setting id="5" name="assisted_gps_enabled" value="1" package="android" />
+  <setting id="23" name="lock_sound" value="/system/media/audio/ui/Lock.ogg" package="android" />
+  <setting id="7" name="auto_time_zone" value="1" package="android" />
+  <setting id="12" name="wifi_on" value="0" package="android" />
+  <setting id="33" name="wireless_charging_started_sound" value="/system/media/audio/ui/WirelessChargingStarted.ogg" package="android" />
+  <setting id="17" name="device_provisioned" value="0" package="android" />
+  <setting id="6" name="auto_time" value="1" package="android" />
+  <setting id="20" name="usb_mass_storage_enabled" value="1" package="android" />
+  <setting id="38" name="call_auto_retry" value="0" package="android" />
+  <setting id="29" name="desk_dock_sound" value="/system/media/audio/ui/Dock.ogg" package="android" />
+  <setting id="377" name="animator_duration_scale" value="0.0" package="android" />
+</settings>

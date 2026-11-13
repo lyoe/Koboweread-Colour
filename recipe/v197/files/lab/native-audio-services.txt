@@ -1,0 +1,8 @@
+Found 7 services:
+0	media.sound_trigger_hw: [android.hardware.ISoundTriggerHwService]
+1	media.radio: [android.hardware.IRadioService]
+2	media.audio_policy: [android.media.IAudioPolicyService]
+3	media.audio_flinger: [android.media.IAudioFlinger]
+4	sensorservice: [android.gui.SensorServer]
+5	gpu: [android.ui.IGpuService]
+6	SurfaceFlinger: [android.ui.ISurfaceComposer]

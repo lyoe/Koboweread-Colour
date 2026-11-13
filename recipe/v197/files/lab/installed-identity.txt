@@ -1,0 +1,1 @@
+uid=10007 source=/data/app/com.tencent.weread.eink-2/base.apk sha256=8da0f18c8d628c3be335f5f0f78d7481eb1718d159740e248fbca7dbd5e32fc2

@@ -1,0 +1,522 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<packages>
+    <version sdkVersion="24" databaseVersion="3" fingerprint="Android/sdk_phone_armv7/generic:7.0/NYC/3245079:userdebug/test-keys" />
+    <version volumeUuid="primary_physical" sdkVersion="24" databaseVersion="24" fingerprint="Android/sdk_phone_armv7/generic:7.0/NYC/3245079:userdebug/test-keys" />
+    <permission-trees />
+    <permissions>
+        <item name="android.permission.REAL_GET_TASKS" package="android" protection="18" />
+        <item name="android.permission.ACCESS_CACHE_FILESYSTEM" package="android" protection="18" />
+        <item name="android.permission.REMOTE_AUDIO_PLAYBACK" package="android" protection="2" />
+        <item name="android.permission.REGISTER_WINDOW_MANAGER_LISTENERS" package="android" protection="2" />
+        <item name="android.permission.INTENT_FILTER_VERIFICATION_AGENT" package="android" protection="18" />
+        <item name="android.permission.BIND_INCALL_SERVICE" package="android" protection="18" />
+        <item name="android.permission.WRITE_SETTINGS" package="android" protection="1218" />
+        <item name="android.permission.READ_SMS" package="android" protection="1" />
+        <item name="android.permission.CONTROL_KEYGUARD" package="android" protection="2" />
+        <item name="android.permission.CONFIGURE_WIFI_DISPLAY" package="android" protection="2" />
+        <item name="android.permission.ACCESS_WIMAX_STATE" package="android" />
+        <item name="android.permission.SET_INPUT_CALIBRATION" package="android" protection="2" />
+        <item name="android.permission.RECOVERY" package="android" protection="18" />
+        <item name="android.permission.TEMPORARY_ENABLE_ACCESSIBILITY" package="android" protection="2" />
+        <item name="android.permission.SET_PROCESS_LIMIT" package="android" protection="50" />
+        <item name="android.permission.FRAME_STATS" package="android" protection="2" />
+        <item name="android.permission.READ_CALENDAR" package="android" protection="1" />
+        <item name="android.permission.BRICK" package="android" protection="2" />
+        <item name="android.permission.READ_CALL_LOG" package="android" protection="1" />
+        <item name="android.permission.BIND_PRINT_RECOMMENDATION_SERVICE" package="android" protection="2" />
+        <item name="android.permission.ACCESS_FINE_LOCATION" package="android" protection="1" />
+        <item name="android.permission.RESTART_PACKAGES" package="android" />
+        <item name="android.permission.STORAGE_INTERNAL" package="android" protection="2" />
+        <item name="android.permission.USE_CREDENTIALS" package="android" />
+        <item name="android.permission.TABLET_MODE" package="android" protection="2" />
+        <item name="android.permission.BIND_KEYGUARD_APPWIDGET" package="android" protection="18" />
+        <item name="android.permission.BIND_DEVICE_ADMIN" package="android" protection="2" />
+        <item name="android.permission.MODIFY_AUDIO_SETTINGS" package="android" />
+        <item name="android.permission.ACCESS_CHECKIN_PROPERTIES" package="android" protection="18" />
+        <item name="android.permission.KILL_UID" package="android" protection="258" />
+        <item name="android.permission.SIGNAL_PERSISTENT_PROCESSES" package="android" protection="50" />
+        <item name="android.permission.BIND_PRINT_SERVICE" package="android" protection="2" />
+        <item name="android.permission.ACCESS_NOTIFICATION_POLICY" package="android" />
+        <item name="android.permission.BIND_RUNTIME_PERMISSION_PRESENTER_SERVICE" package="android" protection="2" />
+        <item name="android.permission.MODIFY_AUDIO_ROUTING" package="android" protection="18" />
+        <item name="android.permission.RECEIVE_BLUETOOTH_MAP" package="android" protection="18" />
+        <item name="android.permission.ACCESS_MOCK_LOCATION" package="android" protection="2" />
+        <item name="android.permission.ACCESS_UCE_OPTIONS_SERVICE" package="android" protection="18" />
+        <item name="android.permission.BIND_VR_LISTENER_SERVICE" package="android" protection="2" />
+        <item name="android.permission.GET_APP_OPS_STATS" package="android" protection="50" />
+        <item name="android.permission.RECEIVE_DATA_ACTIVITY_CHANGE" package="android" protection="18" />
+        <item name="android.permission.GET_PACKAGE_IMPORTANCE" package="android" protection="18" />
+        <item name="android.permission.READ_WIFI_CREDENTIAL" package="android" protection="18" />
+        <item name="android.permission.BIND_DREAM_SERVICE" package="android" protection="2" />
+        <item name="android.permission.WRITE_GSERVICES" package="android" protection="18" />
+        <item name="android.permission.INSTALL_LOCATION_PROVIDER" package="android" protection="18" />
+        <item name="android.permission.MANAGE_ACCOUNTS" package="android" />
+        <item name="android.permission.CONTROL_WIFI_DISPLAY" package="android" protection="2" />
+        <item name="android.permission.SYSTEM_ALERT_WINDOW" package="android" protection="1250" />
+        <item name="android.permission.BIND_CARRIER_SERVICES" package="android" protection="18" />
+        <item name="android.permission.START_TASKS_FROM_RECENTS" package="android" protection="18" />
+        <item name="android.permission.CONTROL_LOCATION_UPDATES" package="android" protection="18" />
+        <item name="android.permission.RECEIVE_WAP_PUSH" package="android" protection="1" />
+        <item name="android.permission.GET_TOP_ACTIVITY_INFO" package="android" protection="2" />
+        <item name="android.permission.CLEAR_APP_USER_DATA" package="android" protection="258" />
+        <item name="android.permission.PROVIDE_TRUST_AGENT" package="android" protection="18" />
+        <item name="android.permission.INSTALL_PACKAGES" package="android" protection="18" />
+        <item name="android.permission.MANAGE_SOUND_TRIGGER" package="android" protection="18" />
+        <item name="android.permission.SEND_RESPOND_VIA_MESSAGE" package="android" protection="18" />
+        <item name="android.permission.ACCESS_FM_RADIO" package="android" protection="18" />
+        <item name="android.permission.MANAGE_VOICE_KEYPHRASES" package="android" protection="18" />
+        <item name="android.permission.SHUTDOWN" package="android" protection="18" />
+        <item name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" package="android" protection="18" />
+        <item name="android.permission.BIND_QUICK_SETTINGS_TILE" package="android" protection="2" />
+        <item name="android.permission.BIND_TV_INPUT" package="android" protection="18" />
+        <item name="android.permission.NFC" package="android" />
+        <item name="android.permission.MODIFY_PARENTAL_CONTROLS" package="android" protection="18" />
+        <item name="android.permission.INTERNAL_SYSTEM_WINDOW" package="android" protection="2" />
+        <item name="android.permission.RETRIEVE_WINDOW_TOKEN" package="android" protection="2" />
+        <item name="android.permission.BODY_SENSORS" package="android" protection="1" />
+        <item name="android.permission.BIND_WALLPAPER" package="android" protection="18" />
+        <item name="android.permission.START_ANY_ACTIVITY" package="android" protection="2" />
+        <item name="android.permission.CAMERA_SEND_SYSTEM_EVENTS" package="android" protection="18" />
+        <item name="android.permission.GET_PROCESS_STATE_AND_OOM_SCORE" package="android" protection="50" />
+        <item name="android.permission.BROADCAST_SMS" package="android" protection="2" />
+        <item name="android.permission.CALL_PRIVILEGED" package="android" protection="18" />
+        <item name="android.permission.BIND_INTENT_FILTER_VERIFIER" package="android" protection="2" />
+        <item name="android.permission.MANAGE_APP_TOKENS" package="android" protection="2" />
+        <item name="android.permission.CHANGE_NETWORK_STATE" package="android" />
+        <item name="android.permission.CAPTURE_TV_INPUT" package="android" protection="18" />
+        <item name="android.permission.MASTER_CLEAR" package="android" protection="18" />
+        <item name="android.permission.PERSISTENT_ACTIVITY" package="android" />
+        <item name="android.permission.BIND_TELECOM_CONNECTION_SERVICE" package="android" protection="18" />
+        <item name="android.permission.WRITE_SYNC_SETTINGS" package="android" />
+        <item name="android.permission.SET_DEBUG_APP" package="android" protection="50" />
+        <item name="android.permission.ACCESS_CONTENT_PROVIDERS_EXTERNALLY" package="android" protection="2" />
+        <item name="android.permission.RESET_SHORTCUT_MANAGER_THROTTLING" package="android" protection="2" />
+        <item name="android.permission.RESET_FINGERPRINT_LOCKOUT" package="android" protection="2" />
+        <item name="android.permission.RECEIVE_BOOT_COMPLETED" package="android" />
+        <item name="android.permission.LOOP_RADIO" package="android" protection="18" />
+        <item name="android.permission.GLOBAL_SEARCH_CONTROL" package="android" protection="2" />
+        <item name="android.permission.SUBSCRIBED_FEEDS_READ" package="android" />
+        <item name="android.permission.PEERS_MAC_ADDRESS" package="android" protection="2" />
+        <item name="android.permission.DEVICE_POWER" package="android" protection="2" />
+        <item name="android.permission.RECEIVE_MMS" package="android" protection="1" />
+        <item name="android.permission.RECEIVE_SMS" package="android" protection="1" />
+        <item name="android.permission.SET_TIME_ZONE" package="android" />
+        <item name="android.permission.REMOVE_TASKS" package="android" protection="2" />
+        <item name="android.permission.EXPAND_STATUS_BAR" package="android" />
+        <item name="com.android.launcher.permission.UNINSTALL_SHORTCUT" package="android" />
+        <item name="android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS" package="android" protection="2" />
+        <item name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" package="android" />
+        <item name="android.permission.READ_PROFILE" package="android" />
+        <item name="android.permission.BIND_VOICE_INTERACTION" package="android" protection="2" />
+        <item name="android.permission.BLUETOOTH" package="android" />
+        <item name="android.permission.BROADCAST_WAP_PUSH" package="android" protection="2" />
+        <item name="android.permission.CHANGE_WIFI_MULTICAST_STATE" package="android" />
+        <item name="android.permission.DVB_DEVICE" package="android" protection="18" />
+        <item name="android.permission.PERFORM_SIM_ACTIVATION" package="android" protection="18" />
+        <item name="com.android.alarm.permission.SET_ALARM" package="android" />
+        <item name="android.permission.CAPTURE_AUDIO_HOTWORD" package="android" protection="18" />
+        <item name="android.permission.WRITE_MEDIA_STORAGE" package="android" protection="18" />
+        <item name="com.android.voicemail.permission.READ_VOICEMAIL" package="android" protection="18" />
+        <item name="android.permission.WRITE_BLOCKED_NUMBERS" package="android" protection="2" />
+        <item name="android.permission.SET_ANIMATION_SCALE" package="android" protection="50" />
+        <item name="android.permission.GET_TASKS" package="android" />
+        <item name="android.permission.BROADCAST_NETWORK_PRIVILEGED" package="android" protection="18" />
+        <item name="android.permission.ACCESS_SURFACE_FLINGER" package="android" protection="2" />
+        <item name="android.permission.SUBSCRIBED_FEEDS_WRITE" package="android" />
+        <item name="android.permission.AUTHENTICATE_ACCOUNTS" package="android" />
+        <item name="android.permission.INTERNET" package="android" />
+        <item name="android.permission.TV_INPUT_HARDWARE" package="android" protection="18" />
+        <item name="android.permission.TRANSMIT_IR" package="android" />
+        <item name="android.permission.RETRIEVE_WINDOW_CONTENT" package="android" protection="18" />
+        <item name="android.permission.REORDER_TASKS" package="android" />
+        <item name="com.android.browser.permission.READ_HISTORY_BOOKMARKS" package="android" />
+        <item name="android.permission.GET_INTENT_SENDER_INTENT" package="android" protection="2" />
+        <item name="android.permission.BLUETOOTH_ADMIN" package="android" />
+        <item name="android.permission.CONTROL_VPN" package="android" protection="18" />
+        <item name="android.permission.UPDATE_DEVICE_STATS" package="android" protection="18" />
+        <item name="android.permission.BLUETOOTH_STACK" package="android" protection="2" />
+        <item name="android.permission.BLUETOOTH_MAP" package="android" protection="2" />
+        <item name="android.permission.READ_PRECISE_PHONE_STATE" package="android" protection="18" />
+        <item name="android.permission.MANAGE_FINGERPRINT" package="android" protection="18" />
+        <item name="android.permission.NET_ADMIN" package="android" protection="2" />
+        <item name="android.permission.CARRIER_FILTER_SMS" package="android" protection="18" />
+        <item name="android.permission.PERFORM_CDMA_PROVISIONING" package="android" protection="18" />
+        <item name="android.permission.BIND_CONNECTION_SERVICE" package="android" protection="18" />
+        <item name="android.permission.READ_EXTERNAL_STORAGE" package="android" protection="1" />
+        <item name="android.permission.INSTALL_GRANT_RUNTIME_PERMISSIONS" package="android" protection="770" />
+        <item name="android.permission.WRITE_SOCIAL_STREAM" package="android" />
+        <item name="android.permission.LAUNCH_TRUST_AGENT_SETTINGS" package="android" protection="18" />
+        <item name="android.permission.REGISTER_CALL_PROVIDER" package="android" protection="18" />
+        <item name="android.permission.GET_PACKAGE_SIZE" package="android" />
+        <item name="android.permission.CLEAR_APP_GRANTED_URI_PERMISSIONS" package="android" protection="2" />
+        <item name="android.permission.BIND_VPN_SERVICE" package="android" protection="2" />
+        <item name="android.permission.TRUST_LISTENER" package="android" protection="2" />
+        <item name="android.permission.ACCOUNT_MANAGER" package="android" protection="2" />
+        <item name="android.permission.MANAGE_USB" package="android" protection="18" />
+        <item name="android.permission.INTERACT_ACROSS_USERS_FULL" package="android" protection="258" />
+        <item name="android.permission.BIND_APPWIDGET" package="android" protection="18" />
+        <item name="android.permission.STOP_APP_SWITCHES" package="android" protection="18" />
+        <item name="android.permission.RECEIVE_MEDIA_RESOURCE_USAGE" package="android" protection="18" />
+        <item name="android.permission.BATTERY_STATS" package="android" protection="50" />
+        <item name="android.permission.PACKAGE_USAGE_STATS" package="android" protection="114" />
+        <item name="android.permission.WRITE_PROFILE" package="android" />
+        <item name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" package="android" protection="18" />
+        <item name="android.permission.GET_ACCOUNTS_PRIVILEGED" package="android" protection="18" />
+        <item name="android.permission.TETHER_PRIVILEGED" package="android" protection="18" />
+        <item name="android.permission.WRITE_SECURE_SETTINGS" package="android" protection="50" />
+        <item name="android.permission.SERIAL_PORT" package="android" protection="18" />
+        <item name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" package="android" protection="2" />
+        <item name="android.permission.BIND_SCREENING_SERVICE" package="android" protection="18" />
+        <item name="android.permission.CAPTURE_AUDIO_OUTPUT" package="android" protection="18" />
+        <item name="android.permission.BIND_MIDI_DEVICE_SERVICE" package="android" protection="2" />
+        <item name="android.permission.ACCESS_COARSE_LOCATION" package="android" protection="1" />
+        <item name="android.permission.MOVE_PACKAGE" package="android" protection="18" />
+        <item name="android.permission.SET_ACTIVITY_WATCHER" package="android" protection="2" />
+        <item name="android.permission.READ_BLOCKED_NUMBERS" package="android" protection="2" />
+        <item name="android.permission.STATUS_BAR_SERVICE" package="android" protection="2" />
+        <item name="android.permission.READ_SEARCH_INDEXABLES" package="android" protection="18" />
+        <item name="android.permission.READ_PHONE_STATE" package="android" protection="1" />
+        <item name="android.permission.NFC_HANDOVER_STATUS" package="android" protection="18" />
+        <item name="android.permission.SCORE_NETWORKS" package="android" protection="18" />
+        <item name="android.permission.DIAGNOSTIC" package="android" protection="2" />
+        <item name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" package="android" />
+        <item name="android.permission.RECEIVE_WIFI_CREDENTIAL_CHANGE" package="android" protection="18" />
+        <item name="android.permission.READ_PRIVILEGED_PHONE_STATE" package="android" protection="18" />
+        <item name="android.permission.UPDATE_LOCK_TASK_PACKAGES" package="android" protection="2050" />
+        <item name="android.permission.ACCESS_IMS_CALL_SERVICE" package="android" protection="18" />
+        <item name="android.permission.SEND_SMS" package="android" protection="1" />
+        <item name="android.permission.BROADCAST_STICKY" package="android" />
+        <item name="android.permission.ASEC_ACCESS" package="android" protection="2" />
+        <item name="android.permission.BIND_REMOTE_DISPLAY" package="android" protection="2" />
+        <item name="android.permission.BLUETOOTH_PRIVILEGED" package="android" protection="18" />
+        <item name="android.permission.SET_ALWAYS_FINISH" package="android" protection="50" />
+        <item name="android.permission.CALL_PHONE" package="android" protection="1" />
+        <item name="android.permission.HARDWARE_TEST" package="android" protection="2" />
+        <item name="android.permission.BIND_NOTIFICATION_RANKER_SERVICE" package="android" protection="2" />
+        <item name="android.permission.ASEC_CREATE" package="android" protection="2" />
+        <item name="android.permission.WRITE_SMS" package="android" />
+        <item name="android.permission.SUBSTITUTE_NOTIFICATION_APP_NAME" package="android" protection="18" />
+        <item name="android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE" package="android" protection="2" />
+        <item name="android.permission.WRITE_CONTACTS" package="android" protection="1" />
+        <item name="android.permission.ACCESS_KEYGUARD_SECURE_STORAGE" package="android" protection="2" />
+        <item name="android.permission.BIND_JOB_SERVICE" package="android" protection="2" />
+        <item name="android.permission.CONFIRM_FULL_BACKUP" package="android" protection="2" />
+        <item name="android.permission.CAPTURE_SECURE_VIDEO_OUTPUT" package="android" protection="18" />
+        <item name="android.permission.SET_TIME" package="android" protection="18" />
+        <item name="android.permission.WRITE_APN_SETTINGS" package="android" protection="18" />
+        <item name="android.permission.CHANGE_WIFI_STATE" package="android" />
+        <item name="android.permission.BIND_PACKAGE_VERIFIER" package="android" protection="2" />
+        <item name="android.permission.READ_INSTALL_SESSIONS" package="android" />
+        <item name="android.permission.MODIFY_CELL_BROADCASTS" package="android" protection="18" />
+        <item name="android.permission.MODIFY_DAY_NIGHT_MODE" package="android" protection="18" />
+        <item name="android.permission.BIND_ROUTE_PROVIDER" package="android" protection="2" />
+        <item name="android.permission.RECEIVE_STK_COMMANDS" package="android" protection="18" />
+        <item name="android.permission.GET_PASSWORD" package="android" protection="2" />
+        <item name="android.permission.BIND_CARRIER_MESSAGING_SERVICE" package="android" protection="18" />
+        <item name="android.permission.PACKAGE_VERIFICATION_AGENT" package="android" protection="18" />
+        <item name="android.permission.SET_ORIENTATION" package="android" protection="2" />
+        <item name="android.permission.REVOKE_RUNTIME_PERMISSIONS" package="android" protection="770" />
+        <item name="android.permission.MANAGE_USERS" package="android" protection="18" />
+        <item name="android.permission.SET_PREFERRED_APPLICATIONS" package="android" protection="2" />
+        <item name="android.permission.BIND_TV_REMOTE_SERVICE" package="android" protection="18" />
+        <item name="android.permission.FLASHLIGHT" package="android" />
+        <item name="android.permission.DELETE_CACHE_FILES" package="android" protection="18" />
+        <item name="android.permission.SET_WALLPAPER_COMPONENT" package="android" protection="18" />
+        <item name="android.permission.ACCESS_UCE_PRESENCE_SERVICE" package="android" protection="18" />
+        <item name="android.permission.ACCESS_NETWORK_STATE" package="android" />
+        <item name="android.permission.BIND_CONDITION_PROVIDER_SERVICE" package="android" protection="2" />
+        <item name="android.permission.CONFIGURE_DISPLAY_COLOR_TRANSFORM" package="android" protection="2" />
+        <item name="android.permission.ACCESS_MTP" package="android" protection="18" />
+        <item name="android.permission.DISABLE_KEYGUARD" package="android" />
+        <item name="android.permission.BACKUP" package="android" protection="18" />
+        <item name="android.permission.CAMERA" package="android" protection="1" />
+        <item name="android.permission.CHANGE_CONFIGURATION" package="android" protection="50" />
+        <item name="android.permission.USER_ACTIVITY" package="android" protection="18" />
+        <item name="android.permission.LOCAL_MAC_ADDRESS" package="android" protection="18" />
+        <item name="android.permission.READ_LOGS" package="android" protection="50" />
+        <item name="android.permission.COPY_PROTECTED_DATA" package="android" protection="2" />
+        <item name="android.permission.ASEC_DESTROY" package="android" protection="2" />
+        <item name="android.permission.INTERACT_ACROSS_USERS" package="android" protection="50" />
+        <item name="android.permission.SET_WALLPAPER" package="android" />
+        <item name="android.permission.ASEC_RENAME" package="android" protection="2" />
+        <item name="android.permission.SET_KEYBOARD_LAYOUT" package="android" protection="2" />
+        <item name="android.permission.WRITE_CALENDAR" package="android" protection="1" />
+        <item name="android.permission.UPDATE_CONFIG" package="android" protection="18" />
+        <item name="android.permission.ACCESS_NETWORK_CONDITIONS" package="android" protection="18" />
+        <item name="android.permission.WRITE_CALL_LOG" package="android" protection="1" />
+        <item name="android.permission.READ_DREAM_STATE" package="android" protection="18" />
+        <item name="android.permission.QUERY_DO_NOT_ASK_CREDENTIALS_ON_BOOT" package="android" protection="2" />
+        <item name="android.permission.UPDATE_LOCK" package="android" protection="18" />
+        <item name="android.permission.READ_NETWORK_USAGE_HISTORY" package="android" protection="18" />
+        <item name="android.permission.ACCESS_DRM_CERTIFICATES" package="android" protection="18" />
+        <item name="android.permission.TV_VIRTUAL_REMOTE_CONTROLLER" package="android" protection="18" />
+        <item name="android.permission.MANAGE_APP_OPS_RESTRICTIONS" package="android" protection="258" />
+        <item name="android.permission.READ_INPUT_STATE" package="android" protection="2" />
+        <item name="android.permission.KILL_BACKGROUND_PROCESSES" package="android" />
+        <item name="android.permission.CACHE_CONTENT" package="android" protection="2" />
+        <item name="android.permission.USE_FINGERPRINT" package="android" />
+        <item name="android.permission.ACCESS_VOICE_INTERACTION_SERVICE" package="android" protection="2" />
+        <item name="android.permission.BIND_PRINT_SPOOLER_SERVICE" package="android" protection="2" />
+        <item name="android.permission.BIND_DIRECTORY_SEARCH" package="android" protection="18" />
+        <item name="android.permission.USE_SIP" package="android" protection="1" />
+        <item name="android.permission.WRITE_USER_DICTIONARY" package="android" />
+        <item name="android.permission.REGISTER_SIM_SUBSCRIPTION" package="android" protection="18" />
+        <item name="android.permission.READ_SYNC_STATS" package="android" />
+        <item name="android.permission.WRITE_DREAM_STATE" package="android" protection="18" />
+        <item name="android.permission.FREEZE_SCREEN" package="android" protection="2" />
+        <item name="android.permission.REBOOT" package="android" protection="18" />
+        <item name="android.permission.DISPATCH_NFC_MESSAGE" package="android" protection="18" />
+        <item name="android.permission.MOUNT_FORMAT_FILESYSTEMS" package="android" protection="18" />
+        <item name="android.permission.PROCESS_OUTGOING_CALLS" package="android" protection="1" />
+        <item name="android.permission.READ_CELL_BROADCASTS" package="android" protection="1" />
+        <item name="android.permission.OEM_UNLOCK_STATE" package="android" protection="2" />
+        <item name="android.permission.REGISTER_CONNECTION_MANAGER" package="android" protection="18" />
+        <item name="android.permission.MANAGE_DEVICE_ADMINS" package="android" protection="18" />
+        <item name="android.permission.CLEAR_APP_CACHE" package="android" protection="18" />
+        <item name="android.permission.CHANGE_APP_IDLE_STATE" package="android" protection="2" />
+        <item name="android.permission.BIND_TRUST_AGENT" package="android" protection="2" />
+        <item name="android.permission.MANAGE_DOCUMENTS" package="android" protection="2" />
+        <item name="android.permission.ACCESS_PDB_STATE" package="android" protection="2" />
+        <item name="android.permission.MANAGE_NETWORK_POLICY" package="android" protection="2" />
+        <item name="android.permission.BIND_REMOTEVIEWS" package="android" protection="18" />
+        <item name="android.permission.ASEC_MOUNT_UNMOUNT" package="android" protection="2" />
+        <item name="android.permission.GRANT_RUNTIME_PERMISSIONS" package="android" protection="770" />
+        <item name="android.permission.SET_POINTER_SPEED" package="android" protection="2" />
+        <item name="android.permission.CHANGE_BACKGROUND_DATA_SETTING" package="android" protection="2" />
+        <item name="android.permission.MANAGE_NOTIFICATIONS" package="android" protection="2" />
+        <item name="android.permission.GLOBAL_SEARCH" package="android" protection="18" />
+        <item name="android.permission.NET_TUNNELING" package="android" protection="2" />
+        <item name="android.permission.CONNECTIVITY_INTERNAL" package="android" protection="18" />
+        <item name="android.permission.FACTORY_TEST" package="android" protection="2" />
+        <item name="android.permission.SET_WALLPAPER_HINTS" package="android" />
+        <item name="android.permission.MANAGE_MEDIA_PROJECTION" package="android" protection="2" />
+        <item name="android.permission.READ_SYNC_SETTINGS" package="android" />
+        <item name="com.android.browser.permission.WRITE_HISTORY_BOOKMARKS" package="android" />
+        <item name="android.permission.GET_ACCOUNTS" package="android" protection="1" />
+        <item name="android.permission.BROADCAST_PACKAGE_REMOVED" package="android" protection="2" />
+        <item name="android.permission.OVERRIDE_WIFI_CONFIG" package="android" protection="18" />
+        <item name="android.permission.FORCE_STOP_PACKAGES" package="android" protection="18" />
+        <item name="android.permission.MANAGE_CA_CERTIFICATES" package="android" protection="18" />
+        <item name="android.permission.CAPTURE_VIDEO_OUTPUT" package="android" protection="18" />
+        <item name="android.permission.ACCESS_NOTIFICATIONS" package="android" protection="18" />
+        <item name="android.permission.WRITE_EXTERNAL_STORAGE" package="android" protection="1" />
+        <item name="android.permission.VIBRATE" package="android" />
+        <item name="android.permission.BIND_ACCESSIBILITY_SERVICE" package="android" protection="2" />
+        <item name="android.permission.MANAGE_ACTIVITY_STACKS" package="android" protection="18" />
+        <item name="android.permission.HDMI_CEC" package="android" protection="18" />
+        <item name="android.permission.BIND_INPUT_METHOD" package="android" protection="2" />
+        <item name="android.permission.INVOKE_CARRIER_SETUP" package="android" protection="18" />
+        <item name="android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST" package="android" protection="18" />
+        <item name="android.permission.REMOVE_DRM_CERTIFICATES" package="android" protection="18" />
+        <item name="android.permission.READ_USER_DICTIONARY" package="android" />
+        <item name="android.permission.FILTER_EVENTS" package="android" protection="2" />
+        <item name="android.permission.RECEIVE_EMERGENCY_BROADCAST" package="android" protection="18" />
+        <item name="android.permission.CREATE_USERS" package="android" protection="2" />
+        <item name="android.permission.MODIFY_NETWORK_ACCOUNTING" package="android" protection="18" />
+        <item name="android.permission.CRYPT_KEEPER" package="android" protection="18" />
+        <item name="android.permission.BIND_NFC_SERVICE" package="android" protection="2" />
+        <item name="com.android.voicemail.permission.WRITE_VOICEMAIL" package="android" protection="18" />
+        <item name="android.permission.GET_DETAILED_TASKS" package="android" protection="2" />
+        <item name="android.permission.NOTIFY_PENDING_SYSTEM_UPDATE" package="android" protection="18" />
+        <item name="android.permission.DISPATCH_PROVISIONING_MESSAGE" package="android" protection="18" />
+        <item name="android.permission.ALLOW_ANY_CODEC_FOR_PLAYBACK" package="android" protection="18" />
+        <item name="android.permission.MODIFY_APPWIDGET_BIND_PERMISSIONS" package="android" protection="18" />
+        <item name="android.permission.ACCESS_WIFI_STATE" package="android" />
+        <item name="android.permission.FORCE_BACK" package="android" protection="2" />
+        <item name="android.permission.CHANGE_WIMAX_STATE" package="android" />
+        <item name="android.permission.CAMERA_DISABLE_TRANSMIT_LED" package="android" protection="18" />
+        <item name="android.permission.REQUEST_INSTALL_PACKAGES" package="android" />
+        <item name="android.permission.CONTROL_INCALL_EXPERIENCE" package="android" protection="18" />
+        <item name="android.permission.MODIFY_PHONE_STATE" package="android" protection="18" />
+        <item name="android.permission.ACCESS_VR_MANAGER" package="android" protection="2" />
+        <item name="android.permission.PACKET_KEEPALIVE_OFFLOAD" package="android" protection="18" />
+        <item name="com.android.launcher.permission.INSTALL_SHORTCUT" package="android" />
+        <item name="android.permission.BIND_TEXT_SERVICE" package="android" protection="2" />
+        <item name="android.permission.STATUS_BAR" package="android" protection="18" />
+        <item name="android.permission.READ_FRAME_BUFFER" package="android" protection="18" />
+        <item name="android.permission.RECORD_AUDIO" package="android" protection="1" />
+        <item name="android.permission.SEND_SMS_NO_CONFIRMATION" package="android" protection="18" />
+        <item name="android.permission.DUMP" package="android" protection="50" />
+        <item name="android.permission.GET_APP_GRANTED_URI_PERMISSIONS" package="android" protection="2" />
+        <item name="android.permission.LOCATION_HARDWARE" package="android" protection="18" />
+        <item name="android.permission.READ_SOCIAL_STREAM" package="android" />
+        <item name="android.permission.WAKE_LOCK" package="android" />
+        <item name="android.permission.READ_CONTACTS" package="android" protection="1" />
+        <item name="android.permission.INJECT_EVENTS" package="android" protection="2" />
+        <item name="android.permission.BIND_CHOOSER_TARGET_SERVICE" package="android" protection="2" />
+        <item name="android.permission.UPDATE_APP_OPS_STATS" package="android" protection="274" />
+        <item name="android.permission.ACCESS_EPHEMERAL_APPS" package="android" protection="2" />
+        <item name="android.permission.ACCESS_INPUT_FLINGER" package="android" protection="2" />
+        <item name="android.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS" package="android" protection="18" />
+        <item name="android.permission.READ_OEM_UNLOCK_STATE" package="android" protection="18" />
+        <item name="android.permission.SET_SCREEN_COMPATIBILITY" package="android" protection="2" />
+        <item name="android.permission.MEDIA_CONTENT_CONTROL" package="android" protection="18" />
+        <item name="android.permission.DELETE_PACKAGES" package="android" protection="18" />
+        <item name="com.android.voicemail.permission.ADD_VOICEMAIL" package="android" protection="1" />
+    </permissions>
+    <package name="com.kobo.lab.installed" codePath="/data/app/com.kobo.lab.installed-1" nativeLibraryPath="/data/app/com.kobo.lab.installed-1/lib" publicFlags="403193412" privateFlags="0" ft="1a156284878" it="1a14acb26a9" ut="1a14ad65ec2" version="2" userId="10006" installer="android">
+        <sigs count="1">
+            <cert index="0" key="@LAB_CERT@" />
+        </sigs>
+        <proper-signing-keyset identifier="2" />
+    </package>
+    <package name="com.android.defcontainer" codePath="/system/priv-app/DefaultContainerService" nativeLibraryPath="/system/priv-app/DefaultContainerService/lib" publicFlags="940064325" privateFlags="8" ft="1a1562838d8" it="1a14ab4c3b8" ut="1a1562838d8" version="24" userId="10001">
+        <sigs count="1">
+            <cert index="1" key="308204a830820390a003020102020900b3998086d056cffa300d06092a864886f70d0101040500308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d301e170d3038303431353232343035305a170d3335303930313232343035305a308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d30820120300d06092a864886f70d01010105000382010d003082010802820101009c780592ac0d5d381cdeaa65ecc8a6006e36480c6d7207b12011be50863aabe2b55d009adf7146d6f2202280c7cd4d7bdb26243b8a806c26b34b137523a49268224904dc01493e7c0acf1a05c874f69b037b60309d9074d24280e16bad2a8734361951eaf72a482d09b204b1875e12ac98c1aa773d6800b9eafde56d58bed8e8da16f9a360099c37a834a6dfedb7b6b44a049e07a269fccf2c5496f2cf36d64df90a3b8d8f34a3baab4cf53371ab27719b3ba58754ad0c53fc14e1db45d51e234fbbe93c9ba4edf9ce54261350ec535607bf69a2ff4aa07db5f7ea200d09a6c1b49e21402f89ed1190893aab5a9180f152e82f85a45753cf5fc19071c5eec827020103a381fc3081f9301d0603551d0e041604144fe4a0b3dd9cba29f71d7287c4e7c38f2086c2993081c90603551d230481c13081be80144fe4a0b3dd9cba29f71d7287c4e7c38f2086c299a1819aa48197308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d820900b3998086d056cffa300c0603551d13040530030101ff300d06092a864886f70d01010405000382010100572551b8d93a1f73de0f6d469f86dad6701400293c88a0cd7cd778b73dafcc197fab76e6212e56c1c761cfc42fd733de52c50ae08814cefc0a3b5a1a4346054d829f1d82b42b2048bf88b5d14929ef85f60edd12d72d55657e22e3e85d04c831d613d19938bb8982247fa321256ba12d1d6a8f92ea1db1c373317ba0c037f0d1aff645aef224979fba6e7a14bc025c71b98138cef3ddfc059617cf24845cf7b40d6382f7275ed738495ab6e5931b9421765c491b72fb68e080dbdb58c2029d347c8b328ce43ef6a8b15533edfbe989bd6a48dd4b202eda94c6ab8dd5b8399203daae2ed446232e4fe9bd961394c6300e5138e3cfd285e6e4e483538cb8b1b357" />
+        </sigs>
+        <perms>
+            <item name="android.permission.ACCESS_CACHE_FILESYSTEM" granted="true" flags="0" />
+            <item name="android.permission.WRITE_MEDIA_STORAGE" granted="true" flags="0" />
+            <item name="android.permission.ASEC_ACCESS" granted="true" flags="0" />
+            <item name="android.permission.ASEC_CREATE" granted="true" flags="0" />
+            <item name="android.permission.ASEC_DESTROY" granted="true" flags="0" />
+            <item name="android.permission.INTERACT_ACROSS_USERS" granted="true" flags="0" />
+            <item name="android.permission.ASEC_MOUNT_UNMOUNT" granted="true" flags="0" />
+        </perms>
+        <proper-signing-keyset identifier="1" />
+    </package>
+    <package name="android" codePath="/system/framework/framework-res.apk" nativeLibraryPath="/system/lib/framework-res" primaryCpuAbi="armeabi-v7a" publicFlags="944291337" privateFlags="8" ft="1a148525a18" it="1a148525a18" ut="1a148525a18" version="24" sharedUserId="1000">
+        <sigs count="1">
+            <cert index="1" />
+        </sigs>
+        <perms>
+            <item name="android.permission.CONTROL_VPN" granted="true" flags="0" />
+            <item name="android.permission.PACKAGE_USAGE_STATS" granted="true" flags="0" />
+            <item name="android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE" granted="true" flags="0" />
+            <item name="android.permission.BIND_JOB_SERVICE" granted="true" flags="0" />
+            <item name="android.permission.CONFIRM_FULL_BACKUP" granted="true" flags="0" />
+            <item name="android.permission.LOCATION_HARDWARE" granted="true" flags="0" />
+        </perms>
+        <proper-signing-keyset identifier="1" />
+    </package>
+    <package name="com.android.statementservice" codePath="/system/priv-app/StatementService" nativeLibraryPath="/system/priv-app/StatementService/lib" publicFlags="940064325" privateFlags="8" ft="1a156283cc0" it="1a14abd1c70" ut="1a156283cc0" version="1" userId="10005">
+        <sigs count="1">
+            <cert index="2" key="308204a830820390a003020102020900936eacbe07f201df300d06092a864886f70d0101050500308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d301e170d3038303232393031333334365a170d3335303731373031333334365a308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d30820120300d06092a864886f70d01010105000382010d00308201080282010100d6931904dec60b24b1edc762e0d9d8253e3ecd6ceb1de2ff068ca8e8bca8cd6bd3786ea70aa76ce60ebb0f993559ffd93e77a943e7e83d4b64b8e4fea2d3e656f1e267a81bbfb230b578c20443be4c7218b846f5211586f038a14e89c2be387f8ebecf8fcac3da1ee330c9ea93d0a7c3dc4af350220d50080732e0809717ee6a053359e6a694ec2cb3f284a0a466c87a94d83b31093a67372e2f6412c06e6d42f15818dffe0381cc0cd444da6cddc3b82458194801b32564134fbfde98c9287748dbf5676a540d8154c8bbca07b9e247553311c46b9af76fdeeccc8e69e7c8a2d08e782620943f99727d3c04fe72991d99df9bae38a0b2177fa31d5b6afee91f020103a381fc3081f9301d0603551d0e04160414485900563d272c46ae118605a47419ac09ca8c113081c90603551d230481c13081be8014485900563d272c46ae118605a47419ac09ca8c11a1819aa48197308194310b3009060355040613025553311330110603550408130a43616c69666f726e6961311630140603550407130d4d6f756e7461696e20566965773110300e060355040a1307416e64726f69643110300e060355040b1307416e64726f69643110300e06035504031307416e64726f69643122302006092a864886f70d0109011613616e64726f696440616e64726f69642e636f6d820900936eacbe07f201df300c0603551d13040530030101ff300d06092a864886f70d010105050003820101007aaf968ceb50c441055118d0daabaf015b8a765a27a715a2c2b44f221415ffdace03095abfa42df70708726c2069e5c36eddae0400be29452c084bc27eb6a17eac9dbe182c204eb15311f455d824b656dbe4dc2240912d7586fe88951d01a8feb5ae5a4260535df83431052422468c36e22c2a5ef994d61dd7306ae4c9f6951ba3c12f1d1914ddc61f1a62da2df827f603fea5603b2c540dbd7c019c36bab29a4271c117df523cdbc5f3817a49e0efa60cbd7f74177e7a4f193d43f4220772666e4c4d83e1bd5a86087cf34f2dec21e245ca6c2bb016e683638050d2c430eea7c26a1c49d3760a58ab7f1a82cc938b4831384324bd0401fa12163a50570e684d" />
+        </sigs>
+        <perms>
+            <item name="android.permission.INTENT_FILTER_VERIFICATION_AGENT" granted="true" flags="0" />
+            <item name="android.permission.INTERNET" granted="true" flags="0" />
+            <item name="android.permission.ACCESS_NETWORK_STATE" granted="true" flags="0" />
+        </perms>
+        <proper-signing-keyset identifier="3" />
+    </package>
+    <package name="com.kobo.lab.smoke" codePath="/system/app/KoboProbe" nativeLibraryPath="/system/app/KoboProbe/lib" publicFlags="403193413" privateFlags="0" ft="1a156281d80" it="1a149857348" ut="1a156281d80" version="1" userId="10000">
+        <sigs count="1">
+            <cert index="0" />
+        </sigs>
+        <proper-signing-keyset identifier="2" />
+    </package>
+    <package name="com.tencent.weread.eink" codePath="/data/app/com.tencent.weread.eink-2" nativeLibraryPath="/data/app/com.tencent.weread.eink-2/lib" primaryCpuAbi="armeabi-v7a" publicFlags="944258628" privateFlags="0" ft="1a159af09f0" it="1a14bc3c093" ut="1a159afad9d" version="10144203" userId="10007" installer="android">
+        <sigs count="1">
+            <cert index="3" key="3082035b30820243a00302010202045fea93db300d06092a864886f70d01010b0500305d310b3009060355040613025a48310b3009060355040813026764310b300906035504071302677a3110300e060355040a130774656e63656e743110300e060355040b130774656e63656e743110300e0603550403130774656e63656e743020170d3135303830343132323235315a180f32303730303530373132323235315a305d310b3009060355040613025a48310b3009060355040813026764310b300906035504071302677a3110300e060355040a130774656e63656e743110300e060355040b130774656e63656e743110300e0603550403130774656e63656e7430820122300d06092a864886f70d01010105000382010f003082010a0282010100c8f38a0a4c4958b45380d619d146f3aad5bf0c9a99d1f60b12c22ae4c3e34a83f4b0f97ef825ec5702ea6b9157668ebacd386eac7b56c1c76e53f82790b74b13e07c3b149be200961590d8d944affa014ff998cfd6409a1cdf78f0abedf473bdc11a52014f8c6dde3d7e9534c7a3543d07dd2b566541b734d4f373751535c2ed81e24c8f2205c5b42043b7e379aa3c9860aa9c9530557cd8afcfdf43840ce1371a80fa8b335b8d441346c13f7bf3f4275d52d2af8004911d6691e3296a4ecca93436cdaa929938a727eb942023641560e0047deb168ff10bbd82badaa63c4d8e8fef9797b962f2602c1b0129ee09eacd9305c70d032f8dcfbd89dd78df3d85c30203010001a321301f301d0603551d0e04160414968dcb945904e15d0664e7914244e78b20b9975e300d06092a864886f70d01010b05000382010100b3e58cc6892b0a64b36fe5871749f16141589e87588946c77586baeb91f26ee568bb2b92eb2954c5c5d5ca3016db08a5d868d0e401fb067703789cd4b72a338d3f7ed158ed41d095844343a0377ec7290cc4acffdc374f8ae71d1395ac4f119866e719eb101893d198d9caaf34c392a4e5cd2544668aab56dd68ca8d045d4561c91374647a6368a0eda1b0041b54d244d11bd3e0405bdcfbaae3607343816adb90242f3e206bc18c9c92f0a9b1ec9c57d3658463a8864f99ecf521013e94a4dc532a0e5883bfad9e03ffa54bc47f47c932a33d2b5c12657edf4c0c1a55fa3223463d71054abb3e74eb697d9a2b3d0084ad920ed93807f552c384e04f74352c3a" />
+        </sigs>
+        <perms>
+            <item name="android.permission.RECEIVE_BOOT_COMPLETED" granted="true" flags="0" />
+            <item name="android.permission.SET_TIME_ZONE" granted="true" flags="0" />
+            <item name="com.android.launcher.permission.UNINSTALL_SHORTCUT" granted="true" flags="0" />
+            <item name="android.permission.BLUETOOTH" granted="true" flags="0" />
+            <item name="android.permission.INTERNET" granted="true" flags="0" />
+            <item name="android.permission.REORDER_TASKS" granted="true" flags="0" />
+            <item name="android.permission.CHANGE_WIFI_STATE" granted="true" flags="0" />
+            <item name="android.permission.ACCESS_NETWORK_STATE" granted="true" flags="0" />
+            <item name="android.permission.VIBRATE" granted="true" flags="0" />
+            <item name="android.permission.ACCESS_WIFI_STATE" granted="true" flags="0" />
+            <item name="android.permission.REQUEST_INSTALL_PACKAGES" granted="true" flags="0" />
+            <item name="com.android.launcher.permission.INSTALL_SHORTCUT" granted="true" flags="0" />
+            <item name="android.permission.WAKE_LOCK" granted="true" flags="0" />
+        </perms>
+        <proper-signing-keyset identifier="4" />
+    </package>
+    <package name="com.android.providers.settings" codePath="/system/priv-app/SettingsProvider" nativeLibraryPath="/system/priv-app/SettingsProvider/lib" primaryCpuAbi="armeabi-v7a" publicFlags="940097029" privateFlags="8" ft="1a1562838d8" it="1a148806ef8" ut="1a1562838d8" version="24" sharedUserId="1000">
+        <sigs count="1">
+            <cert index="1" />
+        </sigs>
+        <perms>
+            <item name="android.permission.CONTROL_VPN" granted="true" flags="0" />
+            <item name="android.permission.PACKAGE_USAGE_STATS" granted="true" flags="0" />
+            <item name="android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE" granted="true" flags="0" />
+            <item name="android.permission.BIND_JOB_SERVICE" granted="true" flags="0" />
+            <item name="android.permission.CONFIRM_FULL_BACKUP" granted="true" flags="0" />
+            <item name="android.permission.LOCATION_HARDWARE" granted="true" flags="0" />
+        </perms>
+        <proper-signing-keyset identifier="1" />
+    </package>
+    <package name="com.android.webview" codePath="/system/app/webview" nativeLibraryPath="/system/app/webview/lib" primaryCpuAbi="armeabi-v7a" publicFlags="-1207386555" privateFlags="0" ft="1a17e327370" it="1a14be02070" ut="1a17e327370" version="275509100" userId="10008">
+        <sigs count="1">
+            <cert index="2" />
+        </sigs>
+        <proper-signing-keyset identifier="3" />
+    </package>
+    <package name="android.ext.shared" codePath="/system/app/ExtShared" nativeLibraryPath="/system/app/ExtShared/lib" publicFlags="940064325" privateFlags="0" ft="1a156281d80" it="1a14abb3bf8" ut="1a156281d80" version="1" userId="10004">
+        <sigs count="1">
+            <cert index="1" />
+        </sigs>
+        <proper-signing-keyset identifier="1" />
+    </package>
+    <package name="android.ext.services" codePath="/system/priv-app/ExtServices" nativeLibraryPath="/system/priv-app/ExtServices/lib" publicFlags="940097093" privateFlags="8" ft="1a156283cc0" it="1a14abb3bf8" ut="1a156283cc0" version="1" userId="10003">
+        <sigs count="1">
+            <cert index="1" />
+        </sigs>
+        <proper-signing-keyset identifier="1" />
+    </package>
+    <package name="com.android.packageinstaller" codePath="/system/priv-app/PackageInstaller" nativeLibraryPath="/system/priv-app/PackageInstaller/lib" publicFlags="944258629" privateFlags="8" ft="1a1562838d8" it="1a14abb18d0" ut="1a1562838d8" version="24" userId="10002">
+        <sigs count="1">
+            <cert index="1" />
+        </sigs>
+        <perms>
+            <item name="android.permission.KILL_UID" granted="true" flags="0" />
+            <item name="android.permission.CLEAR_APP_USER_DATA" granted="true" flags="0" />
+            <item name="android.permission.INSTALL_PACKAGES" granted="true" flags="0" />
+            <item name="android.permission.INSTALL_GRANT_RUNTIME_PERMISSIONS" granted="true" flags="0" />
+            <item name="android.permission.INTERACT_ACROSS_USERS_FULL" granted="true" flags="0" />
+            <item name="android.permission.READ_INSTALL_SESSIONS" granted="true" flags="0" />
+            <item name="android.permission.REVOKE_RUNTIME_PERMISSIONS" granted="true" flags="0" />
+            <item name="android.permission.MANAGE_USERS" granted="true" flags="0" />
+            <item name="android.permission.MANAGE_APP_OPS_RESTRICTIONS" granted="true" flags="0" />
+            <item name="android.permission.MANAGE_DEVICE_ADMINS" granted="true" flags="0" />
+            <item name="android.permission.CLEAR_APP_CACHE" granted="true" flags="0" />
+            <item name="android.permission.GRANT_RUNTIME_PERMISSIONS" granted="true" flags="0" />
+            <item name="android.permission.WAKE_LOCK" granted="true" flags="0" />
+            <item name="android.permission.UPDATE_APP_OPS_STATS" granted="true" flags="0" />
+            <item name="android.permission.DELETE_PACKAGES" granted="true" flags="0" />
+        </perms>
+        <proper-signing-keyset identifier="1" />
+    </package>
+    <shared-user name="android.uid.system" userId="1000">
+        <sigs count="1">
+            <cert index="1" />
+        </sigs>
+        <perms>
+            <item name="android.permission.CONTROL_VPN" granted="true" flags="0" />
+            <item name="android.permission.PACKAGE_USAGE_STATS" granted="true" flags="0" />
+            <item name="android.intent.category.MASTER_CLEAR.permission.C2D_MESSAGE" granted="true" flags="0" />
+            <item name="android.permission.BIND_JOB_SERVICE" granted="true" flags="0" />
+            <item name="android.permission.CONFIRM_FULL_BACKUP" granted="true" flags="0" />
+            <item name="android.permission.LOCATION_HARDWARE" granted="true" flags="0" />
+        </perms>
+    </shared-user>
+    <keyset-settings version="1">
+        <keys>
+            <public-key identifier="1" value="MIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEAnHgFkqwNXTgc3qpl7MimAG42SAxtcgexIBG+UIY6q+K1XQCa33FG1vIgIoDHzU172yYkO4qAbCazSxN1I6SSaCJJBNwBST58Cs8aBch09psDe2AwnZB00kKA4WutKoc0NhlR6vcqSC0JsgSxh14SrJjBqnc9aAC56v3lbVi+2OjaFvmjYAmcN6g0pt/tt7a0SgSeB6Jp/M8sVJbyzzbWTfkKO42PNKO6q0z1M3GrJ3GbO6WHVK0MU/wU4dtF1R4jT7vpPJuk7fnOVCYTUOxTVge/aaL/SqB9tffqIA0JpsG0niFAL4ntEZCJOqtakYDxUugvhaRXU89fwZBxxe7IJwIBAw==" />
+            <public-key identifier="2" value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoO2Fkv7Gx9uGWobAxHKfcbiZ70WzZuq6J5qfyhv0+awPEWIpU6sXeb1DfdiHMfcToVLuo4UlizPCG/Bght21cgvkt7b9tHTNqNg+3ruZku1qqT8A2GuAgdEQxVI7XZo7ANT4jBNxtHGau0HVpD+SNYoJPKwFuoPJFh+0mgnAoz4xmp2HyUPITD8+NwGjEMVk1w0Bn60fEIAXgevHFrBWRuo8tVVU5O6BQ8SFPQfKJN3/z+XMz6FpgytmmCVWmoJNlXB4I+3osUoPB14+jFey5Q4YOJyXxQuCJkU26SoUEL8fGkcnr9TFUKlTYpPi7A9Lb91Z6CauTuD4IYBCfcT3UQIDAQAB" />
+            <public-key identifier="3" value="MIIBIDANBgkqhkiG9w0BAQEFAAOCAQ0AMIIBCAKCAQEA1pMZBN7GCySx7cdi4NnYJT4+zWzrHeL/Boyo6LyozWvTeG6nCqds5g67D5k1Wf/ZPnepQ+foPUtkuOT+otPmVvHiZ6gbv7IwtXjCBEO+THIYuEb1IRWG8DihTonCvjh/jr7Pj8rD2h7jMMnqk9Cnw9xK81AiDVAIBzLggJcX7moFM1nmppTsLLPyhKCkZsh6lNg7MQk6ZzcuL2QSwG5tQvFYGN/+A4HMDNRE2mzdw7gkWBlIAbMlZBNPv96YySh3SNv1Z2pUDYFUyLvKB7niR1UzEcRrmvdv3uzMjmnnyKLQjngmIJQ/mXJ9PAT+cpkdmd+brjigshd/ox1bav7pHwIBAw==" />
+            <public-key identifier="4" value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyPOKCkxJWLRTgNYZ0UbzqtW/DJqZ0fYLEsIq5MPjSoP0sPl++CXsVwLqa5FXZo66zThurHtWwcduU/gnkLdLE+B8OxSb4gCWFZDY2USv+gFP+ZjP1kCaHN948Kvt9HO9wRpSAU+Mbd49fpU0x6NUPQfdK1ZlQbc01PNzdRU1wu2B4kyPIgXFtCBDt+N5qjyYYKqclTBVfNivz99DhAzhNxqA+oszW41EE0bBP3vz9CddUtKvgASRHWaR4ylqTsypNDbNqpKZOKcn65QgI2QVYOAEfesWj/ELvYK62qY8TY6P75eXuWLyYCwbASnuCerNkwXHDQMvjc+9id143z2FwwIDAQAB" />
+        </keys>
+        <keysets>
+            <keyset identifier="1">
+                <key-id identifier="1" />
+            </keyset>
+            <keyset identifier="2">
+                <key-id identifier="2" />
+            </keyset>
+            <keyset identifier="3">
+                <key-id identifier="3" />
+            </keyset>
+            <keyset identifier="4">
+                <key-id identifier="4" />
+            </keyset>
+        </keysets>
+        <lastIssuedKeyId value="4" />
+        <lastIssuedKeySetId value="4" />
+    </keyset-settings>
+</packages>

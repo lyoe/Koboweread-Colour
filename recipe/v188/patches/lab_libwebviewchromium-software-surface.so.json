@@ -1,0 +1,17 @@
+{
+ "base": "webview:lib/armeabi-v7a/libwebviewchromium.so",
+ "input_sha256": "e0c30aab96915bf63db329a642534b25c69aa4f7be3b8a348d2177559257a9c3",
+ "output_sha256": "d39f571b5c538bf20cca6f37637dfb5dd234da28d66ec7a99db19fa1bf9820b3",
+ "edits": [
+  [
+   26465982,
+   "40d10df1",
+   "01f359be"
+  ],
+  [
+   29619060,
+   "0000000000000000000000000000000000000000",
+   "04d00caf0df12c08fef4d6b90df12c08fef49eb9"
+  ]
+ ]
+}

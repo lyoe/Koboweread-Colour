@@ -1,0 +1,6 @@
+.DS_Store
+/tools/
+/build/
+/releases/
+__pycache__/
+/.public-sync-files

@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<app-ops>
+<pkg n="android">
+<uid n="1000" p="true">
+<op n="63" t="1794219663689" pu="0" />
+</uid>
+</pkg>
+<pkg n="com.kobo.lab.smoke">
+<uid n="10000" p="false">
+<op n="59" t="1794219659236" pu="0" />
+<op n="60" t="1794219659236" pu="0" />
+</uid>
+</pkg>
+<pkg n="android.ext.services">
+<uid n="10003" p="true">
+<op n="59" t="1794219663484" pu="0" />
+<op n="60" t="1794219663484" pu="0" />
+</uid>
+</pkg>
+<pkg n="com.tencent.weread.eink">
+<uid n="10007" p="false">
+<op n="11" t="1793061477835" pu="0" />
+<op n="45" t="1793061480276" d="2065" />
+<op n="59" t="1794219692585" pu="0" />
+<op n="60" t="1794219692585" pu="0" />
+</uid>
+</pkg>
+</app-ops>

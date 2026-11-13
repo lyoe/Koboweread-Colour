@@ -1,0 +1,10 @@
+com.kobo.lab.installed 10006 0 /data/user/0/com.kobo.lab.installed default none
+com.android.defcontainer 10001 0 /data/user_de/0/com.android.defcontainer platform:privapp 2001,1023,1015
+com.android.statementservice 10005 0 /data/user/0/com.android.statementservice default:privapp 3003
+com.kobo.lab.smoke 10000 0 /data/user/0/com.kobo.lab.smoke default none
+com.tencent.weread.eink 10007 0 /data/user/0/com.tencent.weread.eink default 3002,3003
+com.android.providers.settings 1000 0 /data/user_de/0/com.android.providers.settings platform:privapp none
+com.android.webview 10008 0 /data/user/0/com.android.webview default none
+android.ext.shared 10004 0 /data/user_de/0/android.ext.shared platform none
+android.ext.services 10003 0 /data/user_de/0/android.ext.services platform:privapp none
+com.android.packageinstaller 10002 0 /data/user_de/0/com.android.packageinstaller platform:privapp none

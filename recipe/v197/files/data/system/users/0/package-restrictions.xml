@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<package-restrictions>
+    <pkg name="com.kobo.lab.installed" ceDataInode="41277" />
+    <pkg name="com.android.defcontainer" ceDataInode="41128" />
+    <pkg name="android" ceDataInode="41130" />
+    <pkg name="com.android.statementservice" ceDataInode="41276" />
+    <pkg name="com.kobo.lab.smoke" ceDataInode="41267" />
+    <pkg name="com.tencent.weread.eink" ceDataInode="41925" />
+    <pkg name="com.android.providers.settings" ceDataInode="41127" />
+    <pkg name="com.android.webview" ceDataInode="42668" />
+    <pkg name="android.ext.shared" ceDataInode="41131" />
+    <pkg name="android.ext.services" ceDataInode="41132" />
+    <pkg name="com.android.packageinstaller" ceDataInode="41133" />
+    <preferred-activities />
+    <persistent-preferred-activities />
+    <crossProfile-intent-filters />
+    <default-apps />
+</package-restrictions>

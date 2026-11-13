@@ -1,0 +1,20 @@
+--- a/framework-prototype/InstallProbe.java
++++ b/framework-prototype/InstallProbe.java
+@@ -9,7 +9,7 @@
+ /** Uses the actual PackageInstaller Session API and receives its real status Intent. */
+ public final class InstallProbe {
+  private static String packageName="com.kobo.lab.installed", sourcePath="/lab/kobo-installed-probe.apk";
+- private static final String WEREAD_SHA="04d86bcdc1bbd77cab4ecc4d1c04e869d76dbabc79c60c52a707c64fc3e4b75f";
++ private static final String WEREAD_SHA="8da0f18c8d628c3be335f5f0f78d7481eb1718d159740e248fbca7dbd5e32fc2";
+  private static final String WEREAD_CERT="e4dd2f049941989ffafa45aef52eda9701372c27bc1708e89c217935140bfa1c";
+  private static String hex(byte[] bytes)throws Exception {
+   byte[] hash=java.security.MessageDigest.getInstance("SHA-256").digest(bytes);StringBuilder out=new StringBuilder();
+@@ -60,7 +60,7 @@
+   PackageInstaller.SessionParams params=new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+   params.setAppPackageName(packageName);params.setSize(new File(path).length());
+   // Internal storage only; no device storage formatting or external volume management.
+-  Field installFlags=PackageInstaller.SessionParams.class.getField("installFlags");installFlags.setInt(params,installFlags.getInt(params)|16|2);
++  Field installFlags=PackageInstaller.SessionParams.class.getField("installFlags");installFlags.setInt(params,installFlags.getInt(params)|16|2|128);
+   int id=installer.createSession(params);System.out.println("ANDROID_INSTALL_SESSION_CREATED id="+id);
+   boolean submitted=false;
+   try(PackageInstaller.Session session=installer.openSession(id)){

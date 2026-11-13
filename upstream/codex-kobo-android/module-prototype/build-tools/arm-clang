@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+import os,sys,shutil
+# Legacy Linux 4.1 ARM flags; use with the supplied Clang compatibility patch.
+a=[x for x in sys.argv[1:] if x not in ('-mno-thumb-interwork','-fconserve-stack','-mno-sched-prolog')]
+if '-S' in a: a.append('-fno-integrated-as')
+os.execv(os.environ.get('KOBO_CLANG') or shutil.which('clang'),['clang','-target','arm-linux-gnueabi','-fno-pic','-fno-pie','-Wno-error=implicit-function-declaration','-Wno-error=int-conversion']+a)

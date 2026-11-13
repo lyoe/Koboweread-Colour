@@ -1,0 +1,1 @@
+package com.android.server.wm;import android.view.WindowManager;public class WindowState {public com.android.server.input.InputWindowHandle mInputWindowHandle=new com.android.server.input.InputWindowHandle();public int mOwnerUid=10007;public WindowManager.LayoutParams mAttrs=new WindowManager.LayoutParams();}

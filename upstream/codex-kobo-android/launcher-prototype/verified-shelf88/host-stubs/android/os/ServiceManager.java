@@ -1,0 +1,1 @@
+package android.os;public class ServiceManager {public static IBinder service;public static IBinder checkService(String n){return service;}public static void addService(String n,IBinder b){service=b;}}

@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+import os,sys,shutil
+args=[os.environ.get('KOBO_ZIG') or shutil.which('zig'),'cc','-target','arm-linux-gnueabi','-nostdlib','-no-pie']
+a=iter(sys.argv[1:])
+for x in a:
+ if x in ('-m',):next(a);continue
+ if x in ('-o',):args += [x,next(a)];continue
+ if x in ('-T','--script'):args += ['-Wl,-T,'+next(a)];continue
+ if x.startswith('-') and x not in ('-r',):args.append('-Wl,'+x)
+ else:args.append(x)
+os.execv(args[0],args)

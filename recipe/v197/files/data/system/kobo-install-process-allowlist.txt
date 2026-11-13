@@ -1,0 +1,4 @@
+com.kobo.lab.smoke 10000 default /data/user/0/com.kobo.lab.smoke 24
+com.android.defcontainer 10001 platform:privapp /data/user_de/0/com.android.defcontainer 24
+com.kobo.lab.installed 10006 default /data/user/0/com.kobo.lab.installed 24
+com.tencent.weread.eink 10007 default /data/user/0/com.tencent.weread.eink 31

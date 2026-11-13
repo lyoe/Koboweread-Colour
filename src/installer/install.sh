@@ -1,0 +1,125 @@
+#!/bin/sh
+# WeRead 1.8.8 for Kobo Libra 2: installer, started by the KOReader plugin
+# (wereadkobo.koplugin) in the background:
+#   sh install.sh PLUGIN_DIR
+# Reads PLUGIN_DIR/payload/ (host.tar.gz, rootfs.tar.xz, weread-1.8.8.apk,
+# SHA256SUMS, apk-meta, dirtimes) and builds BASE=/mnt/onboard/.adds/kobo-weread-home:
+# launcher files, then a 2 GB ext4 image graphics-v188.img holding Android 7
+# and WeRead 1.8.8 (registered, empty data: first start shows the agreement
+# and the login page). Everything is built in BASE.part and renamed to BASE at
+# the end; on failure BASE.part (only what this run made) is removed.
+# Progress for the plugin: PLUGIN_DIR/install.progress, one line
+#   STEP STEPS PERCENT TEXT      (TEXT fixed for a step: the plugin's dialog
+#   shows it once per step and moves only the bar)
+# Result: PLUGIN_DIR/install.state ("running", "done" or "failed CODE TEXT").
+# Log: PLUGIN_DIR/install.log. Nothing is written to /tmp (RAM).
+set -u
+set -o pipefail 2>/dev/null || :
+umask 022
+pd=$(cd "${1:?}" && pwd) || exit 2
+echo $$ > "$pd/install.pid"
+pl=$pd/payload
+base=/mnt/onboard/.adds/kobo-weread-home
+part=$base.part
+mnt=$part/.image-mnt
+img=$part/graphics-v188.img
+image_mb=2048
+steps=7
+progress(){ printf '%s %s %s %s\n' "$1" "$steps" "$2" "$3" > "$pd/install.progress.new" && mv "$pd/install.progress.new" "$pd/install.progress"; echo "PROGRESS $*"; }
+mounted=0
+fail(){
+ code=$1;shift
+ echo "INSTALL_FAILED code=$code $*"
+ cd /
+ if [ "$mounted" = 1 ];then sync;umount "$mnt" 2>/dev/null || echo INSTALL_UMOUNT_FAILED;fi
+ # Only this run's own partial output; an existing installation is never touched.
+ [ "${made_part:-0}" = 1 ] && rm -rf "$part"
+ printf 'failed %s %s\n' "$code" "$*" > "$pd/install.state"
+ exit "$code"
+}
+trap 'fail 130 被中断' INT TERM
+trap '' HUP
+echo "INSTALL_BEGIN $(date) plugin=$pd"
+printf 'running\n' > "$pd/install.state"
+
+progress 1 0 "检查设备"
+[ "$(id -u)" = 0 ] || fail 10 "需要以 root 运行（KOReader 在 Kobo 上本就是 root）"
+case "$(cut -d, -f1 /mnt/onboard/.kobo/version 2>/dev/null)" in N418*) :;; *) fail 11 "这台设备不是 Kobo Libra 2";;esac
+kver=$(uname -r)
+# kernels.list: "RELEASE FIRMWARE" per kernel this package has modules for.
+grep -q "^$kver " "$pl/kernels.list" 2>/dev/null || fail 12 "这个固件的内核还不受支持（当前内核 $kver；支持的固件：$(awk '{printf "%s ", $2}' "$pl/kernels.list" 2>/dev/null)）"
+[ -x /mnt/onboard/.adds/koreader/luajit ] || fail 13 "KOReader 不在 /mnt/onboard/.adds/koreader"
+[ ! -e "$base" ] || fail 14 "已经安装过（$base 已存在）"
+if grep -q ' /tmp/kobo-android-runtime ' /proc/mounts || [ -e /dev/binder ];then fail 15 "另一个 Android 正在运行，请先关闭";fi
+for f in host.tar.gz rootfs.tar.xz weread-1.8.8.apk SHA256SUMS apk-meta dirtimes kernels.list;do [ -f "$pl/$f" ] || fail 16 "安装包缺少 $f";done
+# A run that was cut off (power, reset) leaves BASE.part: only its own output.
+if grep -q " $mnt " /proc/mounts;then umount "$mnt" || fail 18 "上次未完成的安装仍挂载着镜像";fi
+rm -rf "$part" || fail 19 "无法清理上次未完成的安装"
+free_kb=$(df -k /mnt/onboard | awk 'NR==2 {print $4}')
+[ "$free_kb" -ge $(( (image_mb + 300) * 1024 )) ] || fail 17 "存储空间不足：需要约 $((image_mb + 300)) MB，只剩 $((free_kb / 1024)) MB"
+
+progress 2 2 "校验安装包"
+( cd "$pl" && sha256sum -c SHA256SUMS ) || fail 20 "安装包校验失败，请重新复制"
+
+progress 3 6 "复制启动文件"
+made_part=1
+mkdir -p "$part" && tar -xzf "$pl/host.tar.gz" -C "$part" || fail 31 "复制启动文件失败"
+
+# The image: written in 64 MB pieces (FAT has no sparse files; the card takes
+# 2 GB of zeroes at roughly 10-20 MB/s), then formatted as ext4 with a
+# journal (2026-11-10): the Kobo's busybox mke2fs makes ext2, the packaged
+# tune2fs adds the journal, so an Android cut off by a reboot or a flat
+# battery leaves a journal to replay instead of stale block bitmaps.
+n=0;pieces=$((image_mb / 64))
+while [ "$n" -lt "$pieces" ];do
+ progress 4 $((8 + n * 32 / pieces)) "创建 2 GB 的 Android 镜像"
+ echo "IMAGE_MB $((n * 64))"
+ dd if=/dev/zero of="$img" bs=1048576 count=64 seek=$((n * 64)) conv=notrunc 2>/dev/null || fail 40 "写入镜像失败（存储卡空间或错误）"
+ n=$((n + 1))
+done
+sync
+[ "$(stat -c %s "$img")" = $((image_mb * 1048576)) ] || fail 41 "镜像大小不对"
+progress 5 40 "格式化镜像"
+mke2fs -F -b 4096 -m 0 "$img" >/dev/null || fail 50 "格式化镜像失败"
+"$part/resident-v188/tune2fs" -O has_journal -J size=32 "$img" >/dev/null || fail 52 "镜像加日志失败"
+mkdir -p "$mnt" && mount -t ext4 -o loop,noatime,user_xattr "$img" "$mnt" || fail 51 "挂载镜像失败"
+mounted=1
+
+# The system, fed to xz/tar in 4 MB pieces of the compressed file so that the
+# progress follows the bytes read.
+total=$(stat -c %s "$pl/rootfs.tar.xz");chunk=4194304;count=$(( (total + chunk - 1) / chunk ))
+{
+ i=0
+ while [ "$i" -lt "$count" ];do
+  dd if="$pl/rootfs.tar.xz" bs=$chunk skip=$i count=1 2>/dev/null
+  i=$((i + 1))
+  [ $((i % 4)) = 0 ] || [ "$i" = "$count" ] && progress 6 $((42 + i * 48 / count)) "解压 Android 系统" >&2
+ done
+} | xz -dc | tar -x -f - -C "$mnt" || fail 60 "解压系统失败"
+[ -x "$mnt/system/bin/app_process32" ] && [ -f "$mnt/data/system/packages.xml" ] || fail 61 "系统文件不完整"
+
+progress 7 92 "放入微信读书 1.8.8"
+# apk-meta: one line per copy, "PATH UID GID MODE MTIME" (the values the
+# package manager recorded; a different time would make it digest the APK again).
+while read -r path uid gid mode mtime;do
+ t=$mnt/${path#./}
+ cp "$pl/weread-1.8.8.apk" "$t.new" && chown "$uid:$gid" "$t.new" && chmod "$mode" "$t.new" && touch -d "@$mtime" "$t.new" && mv "$t.new" "$t" || fail 70 "放入 APK 失败"
+done < "$pl/apk-meta"
+# Directory times as in the source image ("PATH MTIME" per directory): the
+# package manager compares a package directory's time with the one it
+# recorded and otherwise verifies the APK again, which fails here and drops
+# WeRead. Last, after every file is in place.
+while read -r path mtime;do touch -d "@$mtime" "$mnt/${path#./}" || fail 73 "无法设置目录时间";done < "$pl/dirtimes"
+sync
+df -Pk "$mnt" | awk 'NR==2 {print $4}' > "$part/resident-v188/image-free-kb"
+cd /
+umount "$mnt" || fail 71 "卸载镜像失败"
+mounted=0
+rmdir "$mnt"
+printf 'version=1.8.8\ninstalled=%s\npackage=%s\n' "$(date '+%Y-%m-%d %H:%M')" "$(cat "$pl/package-version" 2>/dev/null)" > "$part/installed"
+mv "$part" "$base" || fail 72 "无法完成安装目录"
+made_part=0
+sync
+progress 7 100 "安装完成"
+printf 'done\n' > "$pd/install.state"
+echo "INSTALL_DONE $(date)"

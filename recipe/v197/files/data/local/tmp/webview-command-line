@@ -1,0 +1,1 @@
+webview --skip-gpu-data-loading --disable-gpu --disable-gpu-compositing --disable-gpu-rasterization --disable-accelerated-2d-canvas --disable-webgl

@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.kobo.lab.installed" android:versionCode="2" android:versionName="0.2">
+ <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="24" />
+ <application android:label="普通安装 APK 测试" android:allowBackup="false" android:hardwareAccelerated="false">
+  <activity android:name=".InstalledActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity>
+ </application>
+</manifest>

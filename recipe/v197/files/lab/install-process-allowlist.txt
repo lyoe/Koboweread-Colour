@@ -1,0 +1,2 @@
+com.kobo.lab.smoke 10000 default /data/user/0/com.kobo.lab.smoke
+com.android.defcontainer 10001 platform:privapp /data/user_de/0/com.android.defcontainer

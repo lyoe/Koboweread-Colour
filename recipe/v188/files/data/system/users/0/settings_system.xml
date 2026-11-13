@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<settings version="127">
+  <setting id="18" name="window_animation_scale" value="1.0" package="android" />
+  <setting id="22" name="notification_light_pulse" value="1" package="android" />
+  <setting id="5" name="volume_alarm" value="6" package="android" />
+  <setting id="1" name="volume_music" value="11" package="android" />
+  <setting id="4" name="volume_voice" value="4" package="android" />
+  <setting id="14" name="hearing_aid" value="0" package="android" />
+  <setting id="2" name="volume_ring" value="5" package="android" />
+  <setting id="17" name="screen_brightness_mode" value="0" package="android" />
+  <setting id="9" name="mute_streams_affected" value="46" package="android" />
+  <setting id="15" name="tty_mode" value="0" package="android" />
+  <setting id="11" name="dim_screen" value="1" package="android" />
+  <setting id="7" name="volume_bluetooth_sco" value="7" package="android" />
+  <setting id="25" name="lockscreen_sounds_enabled" value="1" package="android" />
+  <setting id="75" name="user_rotation" value="0" package="android" />
+  <setting id="39" name="accelerometer_rotation" value="0" package="android" />
+  <setting id="12" name="screen_off_timeout" value="60000" package="android" />
+  <setting id="10" name="vibrate_when_ringing" value="0" package="android" />
+  <setting id="26" name="pointer_speed" value="0" package="android" />
+  <setting id="19" name="transition_animation_scale" value="1.0" package="android" />
+  <setting id="8" name="mode_ringer_streams_affected" value="166" package="android" />
+  <setting id="6" name="volume_notification" value="5" package="android" />
+  <setting id="13" name="dtmf_tone_type" value="0" package="android" />
+  <setting id="23" name="dtmf_tone" value="1" package="android" />
+  <setting id="3" name="volume_system" value="7" package="android" />
+  <setting id="24" name="sound_effects_enabled" value="1" package="android" />
+  <setting id="16" name="screen_brightness" value="102" package="android" />
+  <setting id="21" name="haptic_feedback_enabled" value="1" package="android" />
+</settings>

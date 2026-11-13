@@ -1,0 +1,1 @@
+package android.os;public class Binder implements IBinder {public static int caller=0;public static int getCallingUid(){return caller;}public void attachInterface(Object x,String token){}protected boolean onTransact(int c,Parcel d,Parcel r,int f)throws RemoteException{return false;}}

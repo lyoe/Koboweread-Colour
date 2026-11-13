@@ -1,0 +1,1 @@
+INSTALLED_APK uid=10006 source=/data/app/com.kobo.lab.installed-1/base.apk

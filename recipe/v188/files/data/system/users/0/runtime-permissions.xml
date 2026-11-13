@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<runtime-permissions fingerprint="Android/sdk_phone_armv7/generic:7.0/NYC/3245079:userdebug/test-keys">
+  <pkg name="com.android.packageinstaller">
+    <item name="android.permission.READ_EXTERNAL_STORAGE" granted="true" flags="30" />
+  </pkg>
+</runtime-permissions>

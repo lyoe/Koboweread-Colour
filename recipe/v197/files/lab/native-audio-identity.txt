@@ -1,0 +1,5 @@
+Name:	audioserver
+Uid:	1041	1041	1041	1041
+Gid:	1041	1041	1041	1041
+Groups:	1005 
+CapEff:	0000000000000000

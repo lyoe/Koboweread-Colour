@@ -1,0 +1,39 @@
+# Linux x86_64 check: bootstrap and every build step that needs no WeRead APK.
+name: build
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Host packages
+        run: sudo apt-get update && sudo apt-get install -y cpio zip unzip build-essential
+      - name: Bootstrap (accepts the Android SDK license for this CI run)
+        run: KOBO_ACCEPT_ANDROID_SDK_LICENSE=1 sh bootstrap.sh
+      - name: Runtime layer
+        run: KOBO_BUILD_OUT=$PWD/build/runtime KOBO_GOOGLE_SYSTEM=$PWD/build/google/system sh src/runtime/build.sh
+      - name: Launchers (unsigned)
+        run: |
+          KOBO_BUILD_OUT=$PWD/build/r197 sh src/resident-v197/build.sh
+          KOBO_BUILD_OUT=$PWD/build/r188 sh src/resident-v188/build.sh
+      - name: Display and system libraries, host tools, shims
+        run: |
+          KOBO_SKIP_KMOD=1 sh src/BUILD.sh $PWD/build/fast
+          KOBO_BUILD_OUT=$PWD/build/tools sh src/tools/build-host-tools.sh
+          sh src/resident-v197/shim/build-shim.sh $PWD/build/shim197.so
+          sh src/resident-v188/shim/build-shim.sh $PWD/build/shim188.so
+      - name: Recipes resolve against Google's image
+        run: |
+          for t in v197 v188; do python3 -I - "$t" <<'PY'
+          import os, sys, json, hashlib
+          t = sys.argv[1]; r = "recipe/" + t; g = "build/google"
+          bad = 0
+          for line in open(r + "/entries.tsv"):
+              f = line.rstrip("\n").split("\t"); src, digest, name = f[7], f[6], f[8]
+              k, _, a = src.partition(":")
+              p = {"google": g + "/system/" + a, "ramdisk": g + "/ramdisk/" + a, "file": r + "/files/" + a}.get(k)
+              if p and digest != "-" and hashlib.sha256(open(p, "rb").read()).hexdigest() != digest:
+                  print("MISMATCH", name); bad += 1
+          print(t, "recipe ok" if not bad else "recipe has %d mismatches" % bad); sys.exit(1 if bad else 0)
+          PY
+          done

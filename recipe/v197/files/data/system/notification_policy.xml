@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<notification-policy version="1">
+<zen version="2" user="0">
+<allow calls="true" repeatCallers="false" messages="false" reminders="true" events="true" callsFrom="1" messagesFrom="1" visualScreenOff="true" visualScreenOn="true" />
+<automatic ruleId="0c9f28db885a41488f34e6ae6a5589e1" enabled="false" snoozing="false" name="Event" zen="3" component="android/com.android.server.notification.EventConditionProvider" conditionId="condition://android/event?userId=-10000&amp;calendar=&amp;reply=1" creationTime="1792377022313" />
+<automatic ruleId="42da96163cbf4a48aa28625babf33e1f" enabled="false" snoozing="false" name="Weekend" zen="3" component="android/com.android.server.notification.ScheduleConditionProvider" conditionId="condition://android/schedule?days=6.7&amp;start=23.30&amp;end=10.0&amp;exitAtAlarm=false" creationTime="1792377022309" />
+<automatic ruleId="978ac8e202614b8ebbb3063ca3048714" enabled="false" snoozing="false" name="Weeknight" zen="3" component="android/com.android.server.notification.ScheduleConditionProvider" conditionId="condition://android/schedule?days=1.2.3.4.5&amp;start=22.0&amp;end=7.0&amp;exitAtAlarm=false" creationTime="1792377022306" />
+</zen>
+<ranking version="1" />
+</notification-policy>

@@ -1,0 +1,1 @@
+package android.os; public class Parcel {public String token;public int extra,result;public void enforceInterface(String x){if(!x.equals(token))throw new SecurityException();}public int dataAvail(){return extra;}public void writeString(String s){token=s;}public void writeNoException(){}public void writeInt(int x){result=x;}}

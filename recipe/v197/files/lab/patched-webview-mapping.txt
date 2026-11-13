@@ -1,0 +1,3 @@
+441d0000-46226000 r-xp 00000000 07:00 41090      /tmp/kobo-android-runtime/system/app/webview/lib/arm/libwebviewchromium.so
+46227000-46394000 r--p 02056000 07:00 41090      /tmp/kobo-android-runtime/system/app/webview/lib/arm/libwebviewchromium.so
+46394000-463b0000 rw-p 021c3000 07:00 41090      /tmp/kobo-android-runtime/system/app/webview/lib/arm/libwebviewchromium.so

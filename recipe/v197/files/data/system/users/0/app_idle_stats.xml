@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<packages>
+    <package name="android" elapsedIdleTime="4070" screenIdleTime="0" />
+    <package name="com.kobo.lab.smoke" elapsedIdleTime="29961220" screenIdleTime="11971" />
+    <package name="com.tencent.weread.eink" elapsedIdleTime="32401704" screenIdleTime="2452455" />
+</packages>

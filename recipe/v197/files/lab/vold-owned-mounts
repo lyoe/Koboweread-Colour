@@ -1,0 +1,16 @@
+/dev/loop0 / ext4 rw,noatime,data=ordered 0 0
+/dev/mmcblk0p3 /lab/libkobo_jit_config.so vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/loop0 /data/app/com.tencent.weread.eink-2/oat/arm/base.odex ext4 rw,noatime,data=ordered 0 0
+/dev/mmcblk0p3 /lab/native-resolution/run-native-weread.sh vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/install-framework-probe.dex vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /system/app/KoboProbe/KoboProbe.apk vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/host-default-network vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/native-resolution/touch-forward vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/native-resolution/libkobo_fb.so vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /system/lib/hw vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/native-resolution/live-display vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/native-resolution/weread-process-entry.dex vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/weread-process-entry.dex vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+/dev/mmcblk0p3 /lab/native-resolution/native-memory-watchdog.sh vfat rw,noatime,nodiratime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+proc /proc proc ro,relatime 0 0
+kobo-ram-scanout /dev/graphics tmpfs rw,nosuid,nodev,noexec,relatime,size=24576k,mode=755 0 0
