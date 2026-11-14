@@ -94,7 +94,7 @@ scan_log(){
 # 阅读优化 page in the launcher (2026-11-11, docs/1.9.7版本.md "启动器：阅读优化"):
 # the launcher cannot see the SD card, so the current settings are written to
 # $marker_dir/tuning (and, once per session, tuning-start: what this session
-# runs with). Its one request, set-<13 x y|n>-<c|r|t>, carries the whole wanted
+# runs with). Its one request, set-<13 x y|n>-<c|r|t>[-seconds], carries the whole wanted
 # state in tune_all order plus the display profile (both versions' launchers
 # share the first ten positions; switches this version does not have, i.e. not in
 # tune_names, are neither listed nor touched); the files are switched
@@ -103,6 +103,11 @@ scan_log(){
 # starts the session again (WeRead opens by itself, as at every start).
 tune_all='syncthrottle markusers chapterprefetch bookprefetch fontcache skia segdict seglow poollow zram idle-suspend page-wipe aosp-pinyin'
 tune_names=$tune_all
+idle_timeout(){
+ local seconds=300 file=$base/fast-v188/idle-suspend-seconds
+ [ ! -f "$file" ] || read -r seconds < "$file" || :
+ case "$seconds" in 60|180|300|600|900|1800) echo "$seconds";; *) echo 300;;esac
+}
 tune_state(){ # file
  tf=$base/fast-v188;tp=reagl-text
  [ ! -f "$base/resident-v188/display-profile" ] || read -r tp < "$base/resident-v188/display-profile" || :
@@ -116,14 +121,20 @@ tune_state(){ # file
    fi
   done
   echo "display $tp"
+  echo "idle-suspend-seconds $(idle_timeout)"
   cl=$base/resident-v188/compile-menu.log;cc=$(sed -n 's/^COMPILE_MENU_DONE code=\([0-9]*\).*/\1/p' "$cl" 2>/dev/null | tail -n 1)
   if [ -n "$cc" ];then
    echo "compile $cc $(sed -n 's/^FAST_COMPILE_OUTPUT_BYTES=\([0-9]*\).*/\1/p' "$cl" | tail -n 1 | awk '{print int($1/1048576)}') $(sed -n 's/^FAST_COMPILE_RESULT code=0 seconds=\([0-9]*\).*/\1/p' "$cl" | tail -n 1) $(date -r "$cl" '+%m-%d_%H:%M')"
   else echo "compile none";fi
  } > "$1.new";chmod 0644 "$1.new";mv "$1.new" "$1"
 }
-tune_set(){ # yynyy...-t
- w=${1%-*};d=${1##*-};tf=$base/fast-v188;i=0
+tune_set(){ # yynyy...-t[-seconds]
+ local word=$1 seconds=
+ case "$word" in
+  *-*-*) seconds=${word##*-};word=${word%-*}
+   case "$seconds" in 60|180|300|600|900|1800) :;; *) echo "RESIDENT_TUNE_REJECTED $1";return 0;;esac;;
+ esac
+ w=${word%-*};d=${word##*-};tf=$base/fast-v188;i=0
  ok=1;case ${#w} in 10|11|12|13) :;; *) ok=0;; esac
  case "$w" in *[!yn]*) ok=0;;esac
  case "$d" in c|r|t) :;; *) ok=0;;esac
@@ -142,6 +153,10 @@ tune_set(){ # yynyy...-t
  case "$d" in c) dp=classic;; r) dp=reagl;; *) dp=reagl-text;;esac
  tp=;[ ! -f "$base/resident-v188/display-profile" ] || read -r tp < "$base/resident-v188/display-profile" || :
  [ "$tp" = "$dp" ] || { printf '%s\n' "$dp" > "$base/resident-v188/display-profile.new" && mv "$base/resident-v188/display-profile.new" "$base/resident-v188/display-profile";echo "RESIDENT_TUNE display=$dp"; }
+ if [ -n "$seconds" ] && [ "$seconds" != "$(idle_timeout)" ];then
+  printf '%s\n' "$seconds" > "$tf/idle-suspend-seconds.new" &&
+   mv "$tf/idle-suspend-seconds.new" "$tf/idle-suspend-seconds"
+ fi
  sync;tune_state "$marker_dir/tuning"
 }
 # The launcher opens its settings page once for each new open-tuning marker
@@ -316,7 +331,7 @@ resident_main(){
  poll_until 600 'grep -q APK_RESIDENT_HOME_READY "$root/lab/android.log" || [ -e "$base/resident-v188-shutdown-request" ]' || { echo RESIDENT_HOME_NOT_READY;return 25; }
  if [ -e "$base/resident-v188-shutdown-request" ];then rm -f "$base/resident-v188-shutdown-request";echo RESIDENT_SHUTDOWN_REQUESTED_DURING_START;return 0;fi
  startup_stage resident_home_ready
- idle_seconds=300;[ ! -e "$base/fast-v188/idle-suspend-disabled" ] || idle_seconds=0
+ idle_seconds=$(idle_timeout);[ ! -e "$base/fast-v188/idle-suspend-disabled" ] || idle_seconds=0
  page_wipe=0;[ ! -e "$base/fast-v188/page-wipe-enabled" ] || page_wipe=1
  tune_state "$marker_dir/tuning";cp "$marker_dir/tuning" "$marker_dir/tuning-start"
  # Background quiet mode: while KOReader is on screen the loop wakes every

@@ -176,7 +176,13 @@ int main(int argc,char **argv){
  const char *wipe_setting=getenv("KOBO_PAGE_WIPE");
  int page_wipe=resident && wipe_setting && !strcmp(wipe_setting,"1");
  const char *idle_seconds=getenv("KOBO_IDLE_SUSPEND_SECONDS");
- unsigned idle_timeout=resident && idle_seconds && !strcmp(idle_seconds,"300")?300:0;
+ unsigned idle_timeout=0;
+ if(resident && idle_seconds){
+  char *end;
+  long value=strtol(idle_seconds,&end,10);
+  if(!*end && (value==60 || value==180 || value==300 || value==600 || value==900 || value==1800))
+   idle_timeout=(unsigned)value;
+ }
  double last_input=now(),next_power_check=last_input;
  double deadline=last_input+seconds;struct exit_hold hold={0};
  edge_init(&edge,resident);

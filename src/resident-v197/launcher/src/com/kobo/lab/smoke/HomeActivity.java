@@ -94,11 +94,14 @@ public final class HomeActivity extends Activity {
   {"seglow","分词进程低优先级","把 CPU 让给翻页"},
   {"poollow","后台任务低优先级","联网、写库让给翻页"},
   {"zram","内存压缩（zram）","相当于多约 30 MB 内存"},
-  {"idle-suspend","超时自动休眠","电池供电时 5 分钟无操作后休眠，唤醒切回微信读书"},
+  {"idle-suspend","超时自动休眠","电池供电时无操作达到所选时长后休眠，唤醒切回微信读书"},
   {"page-wipe","实体键翻页动画","试验功能，实体翻页键触发分区渐显"},
   {"aosp-pinyin","AOSP 离线拼音","启用已安装的拼音键盘，重启微信读书后生效"}};
  private static final String[][] DISPLAYS={{"classic","标准（原显示方式）","c"},{"reagl","REAGL（减少残影）","r"},{"reagl-text","REAGL＋文字增强","t"}};
- private boolean tuningShown,tuneLoaded;
+ private static final int[] IDLE_MINUTES={1,3,5,10,15,30};
+ private int wantIdle=300,startIdle=300;
+ private TextView idleChoice;
+ private boolean tuningShown,tuneLoaded,idleSupported;
  private final boolean[] want=new boolean[TUNES.length],started=new boolean[TUNES.length];
  private String wantDisplay="reagl-text",startDisplay="reagl-text",sentWord,actionWord,compileInfo="";
  private final TextView[] tuneBoxes=new TextView[TUNES.length],tuneNotes=new TextView[TUNES.length],displayBoxes=new TextView[DISPLAYS.length];
@@ -151,6 +154,8 @@ public final class HomeActivity extends Activity {
   if(cur!=null&&!tuneLoaded){
    for(int i=0;i<TUNES.length;i++){want[i]=!"0".equals(cur.get(TUNES[i][0]));started[i]=!"0".equals(start.get(TUNES[i][0]));}
    if(cur.get("display")!=null)wantDisplay=cur.get("display");if(start.get("display")!=null)startDisplay=start.get("display");
+   idleSupported=cur.containsKey("idle-suspend-seconds");
+   wantIdle=idleSeconds(cur);startIdle=idleSeconds(start);
    sentWord=tuneWord();tuneLoaded=true;
   }
   if(cur!=null)compileInfo=compileText(cur.get("compile"));
@@ -165,10 +170,26 @@ public final class HomeActivity extends Activity {
   root.addView(head);
   tuneStatus=text(root,cur==null?"暂时读不到当前设置，请重启 Android 后再试。":"点按切换，立即保存；重启微信读书后生效。",15,16);
   text(root,"",6,0);line(root);
+  idleChoice=null;
   if(cur!=null){
    for(int i=0;i<TUNES.length;i++){final int k=i;
     if(!cur.containsKey(TUNES[i][0]))continue; // not in this WeRead version
     tuneBoxes[i]=row(root,TUNES[i][1],TUNES[i][2],new View.OnClickListener(){public void onClick(View v){want[k]=!want[k];refreshTuning();sendTune();}},tuneNotes,i);
+    if(idleSupported&&"idle-suspend".equals(TUNES[i][0])){
+     idleChoice=button(root,"",new View.OnClickListener(){public void onClick(View v){
+      String[] labels=new String[IDLE_MINUTES.length];int selected=0;
+      for(int j=0;j<labels.length;j++){
+       labels[j]=IDLE_MINUTES[j]+" 分钟";
+       if(wantIdle==IDLE_MINUTES[j]*60)selected=j;
+      }
+      new android.app.AlertDialog.Builder(HomeActivity.this).setTitle("自动休眠等待时间")
+       .setSingleChoiceItems(labels,selected,new android.content.DialogInterface.OnClickListener(){
+        public void onClick(android.content.DialogInterface dialog,int which){
+        wantIdle=IDLE_MINUTES[which]*60;dialog.dismiss();refreshTuning();sendTune();
+        }
+       }).show();
+     }});
+    }
    }
    text(root,"显示效果",19,28);text(root,"",6,0);line(root);
    for(int i=0;i<DISPLAYS.length;i++){final int k=i;
@@ -187,7 +208,13 @@ public final class HomeActivity extends Activity {
   if(p.length>=4&&"0".equals(p[0]))return "\n上次编译："+p[3].replace('_',' ')+"，成功，"+p[1]+" MB，用时 "+p[2]+" 秒。";
   return "\n上次编译"+(p.length>=4?"（"+p[3].replace('_',' ')+"）":"")+"没有完成，原来的加速文件仍在用。";
  }
+ private static int idleSeconds(Map<String,String> tuning){
+  String value=tuning.get("idle-suspend-seconds");
+  for(int minutes:IDLE_MINUTES)if(Integer.toString(minutes*60).equals(value))return minutes*60;
+  return 300;
+ }
  private void refreshTuning(){
+  if(idleChoice!=null)idleChoice.setText("自动休眠等待时间  "+(wantIdle/60)+" 分钟"+(wantIdle!=startIdle?"（重启后生效）":""));
   for(int i=0;i<TUNES.length;i++){
    if(tuneBoxes[i]==null)continue;
    tuneBoxes[i].setText(want[i]?"开":"关");box(tuneBoxes[i],want[i]);
@@ -203,7 +230,9 @@ public final class HomeActivity extends Activity {
   StringBuilder b=new StringBuilder("set-");
   for(boolean w:want)b.append(w?'y':'n');
   String d="t";for(String[] x:DISPLAYS)if(x[0].equals(wantDisplay))d=x[2];
-  return b.append('-').append(d).toString();
+  b.append('-').append(d);
+  if(idleSupported)b.append('-').append(wantIdle);
+  return b.toString();
  }
  // Two taps (within 5 s) for the actions that end the session.
  private void confirm(TextView b,String prompt,String action){
@@ -236,7 +265,8 @@ public final class HomeActivity extends Activity {
   if(!tuningShown||tuneStatus==null||actionWord!=null)return;
   Map<String,String> cur=readTuning(TUNING);boolean ok=cur!=null&&wantDisplay.equals(cur.get("display"));
   for(int i=0;ok&&i<TUNES.length;i++)ok=!cur.containsKey(TUNES[i][0])||want[i]==!"0".equals(cur.get(TUNES[i][0]));
-  boolean changed=!wantDisplay.equals(startDisplay);for(int i=0;i<TUNES.length;i++)changed|=tuneBoxes[i]!=null&&want[i]!=started[i];
+  if(ok&&idleSupported)ok=wantIdle==idleSeconds(cur);
+  boolean changed=!wantDisplay.equals(startDisplay)||(idleSupported&&wantIdle!=startIdle);for(int i=0;i<TUNES.length;i++)changed|=tuneBoxes[i]!=null&&want[i]!=started[i];
   if(restartButton!=null&&restartButton.getText().toString().startsWith("正在"))return;
   tuneStatus.setText(!ok?"设置还没保存好，请稍候再看。":changed?"已保存。点下面“重启微信读书”后生效。":"已保存，与当前运行的设置相同。");
  }};
