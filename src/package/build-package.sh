@@ -1,9 +1,9 @@
 #!/bin/sh
 # Build the KOReader installer package for WeRead 1.9.7 or 1.8.8 entirely from
-# this repository, Google's API 24 ARM system image and your own WeRead APK
+# this repository and Google's API 24 ARM system image
 # (docs/公开版设计.md). No Kobo is needed to build.
 #
-#   sh src/package/build-package.sh 1.9.7 /path/to/weread-1.9.7.apk
+#   sh src/package/build-package.sh 1.9.7
 #
 # Inputs (bootstrap.sh prepares them):
 #   KOBO_TOOLS   toolchain directory (default ./tools): ziglang/, jdk17/,
@@ -16,12 +16,11 @@
 #                default "kobolabtest"); created on first use in
 #                build/keys/lab.jks. Never share it; it is not needed by
 #                anyone else.
-# Output: releases/wereadkobo-VERSION-DATE-local.zip. It contains your APK:
-# keep it for your own devices, do not redistribute it.
+# Output: releases/wereadkobo-VERSION-DATE-local.zip. The user supplies the WeRead APK at installation.
 set -eu
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 top=$(CDPATH= cd -- "$here/../.." && pwd)
-ver=${1:?version 1.9.7 or 1.8.8};apk=${2:?path to your WeRead APK}
+ver=${1:?version 1.9.7 or 1.8.8}
 case "$ver" in
  1.9.7) tag=v197;apk_sha=351105bda1ac58bc037c2d604982635a24018eb0f9b9964abeb5b84647565f1c
         switches="anim-disabled appimage-disabled fontmap-disabled gcms-disabled heapmax8-disabled logsync-disabled memclass-disabled memtrim-disabled pagefix-disabled svcoff-disabled";;
@@ -30,8 +29,6 @@ case "$ver" in
  *) echo "PACKAGE_UNKNOWN_VERSION $ver (1.9.7 or 1.8.8)" >&2;exit 2;;
 esac
 sha256(){ if command -v sha256sum >/dev/null 2>&1;then sha256sum "$1" | cut -c1-64;else shasum -a 256 "$1" | cut -c1-64;fi; }
-[ -f "$apk" ] && [ "$(sha256 "$apk")" = $apk_sha ] || { echo "PACKAGE_APK_MISMATCH: $apk is not WeRead $ver (sha256 $apk_sha)" >&2;exit 3; }
-apk=$(CDPATH= cd -- "$(dirname -- "$apk")" && pwd)/$(basename -- "$apk")
 export KOBO_TOOLS=${KOBO_TOOLS:-$top/tools}
 G=${KOBO_GOOGLE:-$top/build/google}
 for p in "$G/system/lib/libc.so" "$G/system/app/webview/webview.apk" "$G/ramdisk/file_contexts.bin" "$KOBO_TOOLS/ziglang/zig";do
@@ -113,7 +110,7 @@ for f in animation-scales.dex audit-runtime-fds kobo-mkswap kobo-squeeze libkobo
 # 4. Android image tree from the recipe.
 log "image";mkdir -p "$w/payload"
 python3 -I "$top/src/recipe/assemble-rootfs.py" --recipe "$top/recipe/$tag" --google-system "$G/system" --ramdisk "$G/ramdisk" \
- --webview-apk "$G/system/app/webview/webview.apk" --apk "$apk" --lab "$w/runtime/lab" --lab-cert "$cert" --payload \
+ --webview-apk "$G/system/app/webview/webview.apk" --lab "$w/runtime/lab" --lab-cert "$cert" --payload \
  --build "launcher=$R/KoboProbe-resident.apk" --build "installed-probe=$w/probe/kobo-installed-probe.apk" \
  --build "jit-config=$w/shim/libkobo_jit_config.so" --out "$w/payload/rootfs.tar" > "$w/image.log"
 python3 -I -c '
@@ -126,15 +123,19 @@ rm "$w/payload/rootfs.tar"
 k=$w/wereadkobo.koplugin;pl=$k/payload;mkdir -p "$pl"
 (cd "$h" && COPYFILE_DISABLE=1 tar --uid 0 --gid 0 --numeric-owner -czf "$pl/host.tar.gz" .) 2>/dev/null || (cd "$h" && tar --owner=0 --group=0 --numeric-owner -czf "$pl/host.tar.gz" .)
 mv "$w/payload/rootfs.tar.xz" "$w/payload/apk-meta" "$w/payload/dirtimes" "$pl/"
-cp "$apk" "$pl/weread-$ver.apk"
+printf '%s\n' "$apk_sha" > "$pl/weread-apk.sha256"
 for kd in "$top/kernels/"*/;do echo "$(basename "$kd") $(cat "$kd/firmware")";done > "$pl/kernels.list"
 cp "$top/src/installer/install.sh" "$pl/";cp "$h/fd-clean-exec" "$pl/"
 echo "$ver-$(date +%Y%m%d)-local" > "$pl/package-version"
 cp "$top/src/installer/plugin/main.lua" "$top/src/installer/plugin/_meta.lua" "$k/";cp "$top/src/installer/README.txt" "$k/README.txt"
+sed '/^安装$/a\
+请自行下载 weread-1.8.8.apk，放进 wereadkobo.koplugin 目录，与 main.lua 同级。
+' "$k/README.txt" > "$k/README.txt.new"
+mv "$k/README.txt.new" "$k/README.txt"
 if [ $tag != v188 ];then
  for f in "$pl/install.sh" "$k/main.lua" "$k/_meta.lua" "$k/README.txt";do V=$ver T=$tag perl -pi -e 's/1\.8\.8/$ENV{V}/g; s/v188/$ENV{T}/g' "$f";done
 fi
-(cd "$pl" && for f in host.tar.gz rootfs.tar.xz weread-$ver.apk apk-meta dirtimes kernels.list install.sh fd-clean-exec;do echo "$(sha256 "$f")  $f";done > SHA256SUMS)
+(cd "$pl" && for f in host.tar.gz rootfs.tar.xz weread-apk.sha256 apk-meta dirtimes kernels.list install.sh fd-clean-exec;do echo "$(sha256 "$f")  $f";done > SHA256SUMS)
 chmod 0755 "$pl/install.sh" "$pl/fd-clean-exec"
 mkdir -p "$top/releases";zip=$top/releases/wereadkobo-$ver-$(date +%Y%m%d)-local.zip;n=2
 while [ -e "$zip" ];do zip=$top/releases/wereadkobo-$ver-$(date +%Y%m%d)-local-$n.zip;n=$((n+1));done

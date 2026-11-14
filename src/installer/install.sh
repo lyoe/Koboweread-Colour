@@ -2,7 +2,7 @@
 # WeRead 1.8.8 for Kobo Libra 2: installer, started by the KOReader plugin
 # (wereadkobo.koplugin) in the background:
 #   sh install.sh PLUGIN_DIR
-# Reads PLUGIN_DIR/payload/ (host.tar.gz, rootfs.tar.xz, weread-1.8.8.apk,
+# Reads PLUGIN_DIR/payload/ (host.tar.gz, rootfs.tar.xz,
 # SHA256SUMS, apk-meta, dirtimes) and builds BASE=/mnt/onboard/.adds/kobo-weread-home:
 # launcher files, then a 2 GB ext4 image graphics-v188.img holding Android 7
 # and WeRead 1.8.8 (registered, empty data: first start shows the agreement
@@ -51,7 +51,17 @@ grep -q "^$kver " "$pl/kernels.list" 2>/dev/null || fail 12 "这个固件的内�
 [ -x /mnt/onboard/.adds/koreader/luajit ] || fail 13 "KOReader 不在 /mnt/onboard/.adds/koreader"
 [ ! -e "$base" ] || fail 14 "已经安装过（$base 已存在）"
 if grep -q ' /tmp/kobo-android-runtime ' /proc/mounts || [ -e /dev/binder ];then fail 15 "另一个 Android 正在运行，请先关闭";fi
-for f in host.tar.gz rootfs.tar.xz weread-1.8.8.apk SHA256SUMS apk-meta dirtimes kernels.list;do [ -f "$pl/$f" ] || fail 16 "安装包缺少 $f";done
+for f in host.tar.gz rootfs.tar.xz SHA256SUMS apk-meta dirtimes kernels.list;do [ -f "$pl/$f" ] || fail 16 "安装包缺少 $f";done
+apk_name=weread-1.8.8.apk
+apk=$pd/$apk_name
+if [ -f "$pl/weread-apk.sha256" ];then
+ [ -f "$apk" ] || fail 21 "请自行下载 $apk_name，并放到 wereadkobo.koplugin 目录（与 main.lua 同级）"
+ command -v unzip >/dev/null 2>&1 || fail 23 "设备缺少支持输出到标准输出的 unzip"
+else
+ # Compatibility with the lab exporter, whose APK is in SHA256SUMS.
+ apk=$pl/$apk_name
+ grep -q "  $apk_name$" "$pl/SHA256SUMS" && [ -f "$apk" ] || fail 16 "安装包缺少 APK 校验信息"
+fi
 # A run that was cut off (power, reset) leaves BASE.part: only its own output.
 if grep -q " $mnt " /proc/mounts;then umount "$mnt" || fail 18 "上次未完成的安装仍挂载着镜像";fi
 rm -rf "$part" || fail 19 "无法清理上次未完成的安装"
@@ -60,6 +70,12 @@ free_kb=$(df -k /mnt/onboard | awk 'NR==2 {print $4}')
 
 progress 2 2 "校验安装包"
 ( cd "$pl" && sha256sum -c SHA256SUMS ) || fail 20 "安装包校验失败，请重新复制"
+
+if [ -f "$pl/weread-apk.sha256" ];then
+ expected=$(cat "$pl/weread-apk.sha256")
+ actual=$(sha256sum "$apk") || fail 22 "无法读取 $apk_name"
+ [ "${actual%% *}" = "$expected" ] || fail 22 "$apk_name 的 SHA-256 不匹配，请检查版本并重新复制"
+fi
 
 progress 3 6 "复制启动文件"
 made_part=1
@@ -99,11 +115,16 @@ total=$(stat -c %s "$pl/rootfs.tar.xz");chunk=4194304;count=$(( (total + chunk -
 [ -x "$mnt/system/bin/app_process32" ] && [ -f "$mnt/data/system/packages.xml" ] || fail 61 "系统文件不完整"
 
 progress 7 92 "放入微信读书 1.8.8"
-# apk-meta: one line per copy, "PATH UID GID MODE MTIME" (the values the
+# apk-meta: one line per file, "PATH UID GID MODE MTIME [APK_ENTRY]" (the values the
 # package manager recorded; a different time would make it digest the APK again).
-while read -r path uid gid mode mtime;do
+while read -r path uid gid mode mtime entry;do
  t=$mnt/${path#./}
- cp "$pl/weread-1.8.8.apk" "$t.new" && chown "$uid:$gid" "$t.new" && chmod "$mode" "$t.new" && touch -d "@$mtime" "$t.new" && mv "$t.new" "$t" || fail 70 "放入 APK 失败"
+ if [ -n "$entry" ];then
+  unzip -p "$apk" "$entry" > "$t.new" || fail 70 "提取 APK 内的 $entry 失败"
+ else
+  cp "$apk" "$t.new" || fail 70 "放入 APK 失败"
+ fi
+ chown "$uid:$gid" "$t.new" && chmod "$mode" "$t.new" && touch -d "@$mtime" "$t.new" && mv "$t.new" "$t" || fail 70 "放入 APK 失败"
 done < "$pl/apk-meta"
 # Directory times as in the source image ("PATH MTIME" per directory): the
 # package manager compares a package directory's time with the one it

@@ -2,7 +2,7 @@
 (extract-recipe.py / publicize-recipe.py) and the user's inputs:
 
   python3 -I assemble-rootfs.py --recipe DIR --google-system DIR --ramdisk DIR \
-      --webview-apk FILE --apk WEREAD.apk --out ROOTFS.tar \
+      --webview-apk FILE [--apk WEREAD.apk] --out ROOTFS.tar \
       [--lab DIR] [--build NAME=FILE ...] [--lab-tar ROOTFS.tar]
 
 Content per entry SOURCE (entries.tsv):
@@ -27,18 +27,21 @@ def sha(b):
 
 def main():
     ap = argparse.ArgumentParser()
-    for a in ("recipe", "google-system", "ramdisk", "webview-apk", "apk", "out"):
+    for a in ("recipe", "google-system", "ramdisk", "webview-apk", "out"):
         ap.add_argument("--" + a, required=True)
+    ap.add_argument("--apk", help="WeRead APK, required for a complete rootfs")
     ap.add_argument("--lab")
     ap.add_argument("--lab-tar")
     ap.add_argument("--build", action="append", default=[])
     ap.add_argument("--lab-cert", help="hex DER certificate of the user's signing key (fills @LAB_CERT@)")
     ap.add_argument("--payload", action="store_true",
-                    help="installer form: leave the WeRead APK copies out of the tar and write apk-meta and dirtimes beside it")
+                    help="installer form: leave the WeRead APK and its native libraries out of the tar and write apk-meta and dirtimes beside it")
     o = ap.parse_args()
     builds = dict(b.split("=", 1) for b in o.build)
-    apk = open(o.apk, "rb").read()
-    z = zipfile.ZipFile(io.BytesIO(apk))
+    if not o.payload and not o.apk:
+        ap.error("--apk is required without --payload")
+    apk = open(o.apk, "rb").read() if not o.payload else None
+    z = zipfile.ZipFile(io.BytesIO(apk)) if apk is not None else None
     webview = zipfile.ZipFile(o.webview_apk)
     labtar = tarfile.open(o.lab_tar) if o.lab_tar else None
     labmembers = {m.name: m for m in labtar} if labtar else {}
@@ -117,9 +120,12 @@ def main():
         elif typ in "cb":
             ti.type = tarfile.CHRTYPE if typ == "c" else tarfile.BLKTYPE
             ti.devmajor, ti.devminor = (int(x) for x in extra.split(","))
-        elif typ == "f" and o.payload and source == "apk":
-            # install.sh puts the user's APK here with these values.
-            apk_meta.append("%s %s %s %s %s" % (ti.name, uid, gid, mode, mtime))
+        elif typ == "f" and o.payload and source.split(":")[0] == "apk":
+            # install.sh restores these files from the user's APK.
+            fields = [ti.name, uid, gid, mode, mtime]
+            if source != "apk":
+                fields.append(source.partition(":")[2])
+            apk_meta.append(" ".join(fields))
             continue
         elif typ == "f":
             data = content(source, digest, name)

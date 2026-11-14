@@ -25,12 +25,12 @@
 
 ```sh
 sh bootstrap.sh                                         # 下载工具链和 Google 镜像（约 650 MB，需接受 Android SDK 许可）
-sh src/package/build-package.sh 1.9.7 /path/to/weread-1.9.7.apk
+sh src/package/build-package.sh 1.9.7
 ```
 
 生成的 `releases/wereadkobo-1.9.7-日期-local.zip` 里有 KOReader 插件 `wereadkobo.koplugin`，安装方法见 [docs/构建与安装.md](docs/构建与安装.md)。
 
-**这个安装包里含有你的 APK 和你自己的签名密钥生成的组件，只供你自己的设备使用，请不要转发。**
+安装时请自行下载对应版本的微信读书 APK，放到 `wereadkobo.koplugin` 目录中，与 `main.lua` 同级。安装包不含微信读书 APK 或从中提取的原生库。
 
 ## 目录
 
