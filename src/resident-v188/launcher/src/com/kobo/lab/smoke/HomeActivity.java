@@ -70,7 +70,7 @@ public final class HomeActivity extends Activity {
   button(root,"返回 KOReader（Android 后台保留）",new View.OnClickListener(){public void onClick(View v){request("background","正在返回 KOReader…");}});
   button(root,"关闭 Android 并返回 KOReader",new View.OnClickListener(){public void onClick(View v){request("shutdown","正在关闭 Android…");}});
   TextView help=new TextView(this);help.setTextSize(16);help.setTextColor(Color.BLACK);help.setPadding(0,48,0,0);
-  help.setText("任何界面按住当前的下一页键 5 秒后松开：回到这个启动器。\n\n两个翻页键同时按住 2 秒后松开、长按左上角 2 秒后松开、或按电源键：返回 KOReader，Android 保留在后台。\n\n从 KOReader 菜单再次进入时无需重新启动 Android。");
+  help.setText("任何界面按住当前的下一页键 5 秒后松开：回到这个启动器。\n\n两个翻页键同时按住 2 秒后松开：回到这个启动器。\n\n长按左上角 2 秒后松开、或按电源键：返回 KOReader，Android 保留在后台。\n\n从 KOReader 菜单再次进入时无需重新启动 Android。");
   root.addView(help);setContentView(root);
  }
 

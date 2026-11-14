@@ -171,7 +171,7 @@ int main(int argc,char **argv){
   const int required[]={193,194,116};for(unsigned k=0;k<3;k++)if(!((key_bits[required[k]/(8*sizeof(long))]>>(required[k]%(8*sizeof(long))))&1)){rc=24;goto cleanup;}
   if(ioctl(key_fd,EVIOCGRAB,1)<0 || ioctl(key_fd,EVIOCGKEY(sizeof(key_bits)),key_bits)<0){rc=24;goto cleanup;}
   unsigned held=0;for(unsigned k=0;k<3;k++)if((key_bits[required[k]/(8*sizeof(long))]>>(required[k]%(8*sizeof(long))))&1)held|=1u<<k;
-  forma_buttons_init(&physical_keys,held);puts("HOST_FORMA_BUTTONS_READY upper=next lower=previous next_hold_1s=refresh previous_release_3s=screenshot chord_hold_2s=exit power_release=exit");
+  forma_buttons_init(&physical_keys,held);puts("HOST_FORMA_BUTTONS_READY upper=next lower=previous next_hold_1s=refresh previous_release_3s=screenshot chord_hold_2s=home power_release=exit");
  }
  const char *wipe_setting=getenv("KOBO_PAGE_WIPE");
  int page_wipe=resident && wipe_setting && !strcmp(wipe_setting,"1");
@@ -269,6 +269,7 @@ int main(int argc,char **argv){
     if(key->type!=EV_KEY)continue;
     last_input=now();
     if(!physical_keys.pressed && key->value==1)key_refreshed=0;
+    int power_exit=physical_keys.power_armed;
     int action=forma_button_event(&physical_keys,key->code,key->value,now());
     if(resident && action==FORMA_REFRESH){
      int previous=(key->code==194)!=(rot.applied==2);
@@ -285,6 +286,11 @@ int main(int argc,char **argv){
       int result=send_event(sock,6,0,0,&sequence);if(result<0){rc=29;goto cleanup;}
       printf("HOST_RESIDENT_KEY_HOME_RELEASED ack=%d\n",result);continue;
      }else if(key_refreshed)continue;
+    }
+    if(resident && action==FORMA_EXIT && !power_exit){
+     if(button || down || hold.state){puts("HOST_RESIDENT_HOME_SKIPPED_TOUCH_ACTIVE");continue;}
+     int result=send_event(sock,6,0,0,&sequence);if(result<0){rc=29;goto cleanup;}
+     printf("HOST_RESIDENT_CHORD_HOME_RELEASED ack=%d\n",result);continue;
     }
     if(action==FORMA_EXIT){if(request_control("/tmp/kobo-android-runtime/lab/interactive-session-finish","reason=physical-keys\n")<0){rc=23;goto cleanup;}key_exits++;puts("HOST_FORMA_KEY_EXIT_RELEASED");goto cleanup;}
     if(action==FORMA_REFRESH){if(request_control("/tmp/kobo-android-runtime/lab/interactive-refresh-request","refresh\n")<0){rc=26;goto cleanup;}key_refreshes++;puts("HOST_FORMA_KEY_REFRESH_REQUESTED");}
