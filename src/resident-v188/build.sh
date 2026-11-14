@@ -30,8 +30,8 @@ n=$here/native
  -I"$o/display-bridge-prototype" "$n/touch-forward.c" -o "$out/touch-forward-resident"
 "$zig" cc -DKOBO_LIBRA2_NATIVE -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -Wall -Wextra -Wno-sign-compare -DKOBO_TARGET_LIBRA2 \
  -I"$o/network-prototype" "$n/host-default-network.c" -o "$out/host-default-network-resident"
-"$zig" cc -DKOBO_LIBRA2_NATIVE -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -DKOBO_TARGET_LIBRA2 -DFBINK_FOR_KOBO -DFBINK_MINIMAL -DFBINK_WITH_IMAGE -DFBINK_WITH_DRAW \
- -I"$o/display-bridge-prototype" -I"$fbink" -I"$fbink/i2c-tools/include" "$n/live-display-fast.c" "$fbink/fbink.c" "$fbink/qimagescale/qimagescale.c" "$fbink/i2c-tools/lib/smbus.c" -lm -o "$out/live-display-resident"
+"$zig" cc -DKOBO_LIBRA2_NATIVE -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -DKOBO_TARGET_LIBRA2 -DFBINK_FOR_KOBO -DFBINK_MINIMAL -DFBINK_WITH_IMAGE -DFBINK_WITH_DRAW -DFBINK_WITH_BITMAP \
+ -I"$o/display-bridge-prototype" -I"$fbink" -I"$fbink/i2c-tools/include" "$n/live-display-fast.c" "$fbink/fbink.c" "$fbink/cutef8/dfa.c" "$fbink/cutef8/utf8.c" "$fbink/qimagescale/qimagescale.c" "$fbink/i2c-tools/lib/smbus.c" -lm -o "$out/live-display-resident"
 "$zig" cc -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -Wall -Wextra "$n/resident-sched.c" -o "$out/resident-sched"
 "$zig" cc -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -Wall -Wextra "$n/resident-dns-check.c" -o "$out/resident-dns-check"
 "$zig" cc -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -Wall -Wextra -I"$o/network-prototype" "$n/dns-proxy.c" -o "$out/dns-proxy-resident"
