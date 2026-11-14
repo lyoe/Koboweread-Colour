@@ -30,6 +30,9 @@ if ! mkdir "$lock" 2>/dev/null;then
  rm "$lock/owner";rmdir "$lock";mkdir "$lock"
 fi
 printf '%s %s %s\n' "$$" "$(awk '{print $22}' /proc/$$/stat)" "$(cat /proc/sys/kernel/random/boot_id)" > "$lock/owner"
+if [ -d "$base/.host-upgrade" ];then
+ rm "$lock/owner";rmdir "$lock";exit 5
+fi
 child=;phase=runtime_begin;started_uptime=0
 write_state(){
  printf 'stage=%s\nexit=%s\nphase=%s\nstarted_uptime=%s\nmode=resident\nround=1\nrounds=1\n' "$1" "$2" "$phase" "$started_uptime" > "$state.new"

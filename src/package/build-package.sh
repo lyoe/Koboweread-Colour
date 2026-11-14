@@ -126,6 +126,7 @@ mv "$w/payload/rootfs.tar.xz" "$w/payload/apk-meta" "$w/payload/dirtimes" "$pl/"
 printf '%s\n' "$apk_sha" > "$pl/weread-apk.sha256"
 for kd in "$top/kernels/"*/;do echo "$(basename "$kd") $(cat "$kd/firmware")";done > "$pl/kernels.list"
 cp "$top/src/installer/install.sh" "$pl/";cp "$h/fd-clean-exec" "$pl/"
+printf '%s\n' "$cert" > "$pl/launcher-cert"
 echo "$ver-$(date +%Y%m%d)-local" > "$pl/package-version"
 cp "$top/src/installer/plugin/main.lua" "$top/src/installer/plugin/_meta.lua" "$k/";cp "$top/src/installer/README.txt" "$k/README.txt"
 sed '/^安装$/a\
@@ -135,7 +136,7 @@ mv "$k/README.txt.new" "$k/README.txt"
 if [ $tag != v188 ];then
  for f in "$pl/install.sh" "$k/main.lua" "$k/_meta.lua" "$k/README.txt";do V=$ver T=$tag perl -pi -e 's/1\.8\.8/$ENV{V}/g; s/v188/$ENV{T}/g' "$f";done
 fi
-(cd "$pl" && for f in host.tar.gz rootfs.tar.xz weread-apk.sha256 apk-meta dirtimes kernels.list install.sh fd-clean-exec;do echo "$(sha256 "$f")  $f";done > SHA256SUMS)
+(cd "$pl" && for f in host.tar.gz rootfs.tar.xz weread-apk.sha256 apk-meta dirtimes kernels.list install.sh fd-clean-exec launcher-cert package-version;do echo "$(sha256 "$f")  $f";done > SHA256SUMS)
 chmod 0755 "$pl/install.sh" "$pl/fd-clean-exec"
 mkdir -p "$top/releases";zip=$top/releases/wereadkobo-$ver-$(date +%Y%m%d)-local.zip;n=2
 while [ -e "$zip" ];do zip=$top/releases/wereadkobo-$ver-$(date +%Y%m%d)-local-$n.zip;n=$((n+1));done

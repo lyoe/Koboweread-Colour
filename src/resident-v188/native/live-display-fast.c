@@ -51,26 +51,26 @@ static void snapshot_write(void *context,void *data,int size){
  struct snapshot_output *out=context;
  if(fwrite(data,1,(size_t)size,out->file)!=(size_t)size)out->failed=1;
 }
-static void capture_requested_frame(const unsigned char *pixels,int have_frame){
+static int capture_requested_frame(const unsigned char *pixels,int have_frame){
  const char *request="/tmp/kobo-android-runtime/lab/interactive-screenshot-request";
- if(!have_frame || unlink(request)<0)return;
+ if(!have_frame || unlink(request)<0)return 0;
  const char *dir=getenv("KOBO_SNAPSHOT_DIR");
- if(!dir || !*dir)return;
+ if(!dir || !*dir)return -1;
  struct stat st;
  if((mkdir(dir,0755)<0 && errno!=EEXIST) || lstat(dir,&st)<0 || !S_ISDIR(st.st_mode)){
-  puts("LIVE_DISPLAY_SCREENSHOT_DIRECTORY_FAILED");return;
+  puts("LIVE_DISPLAY_SCREENSHOT_DIRECTORY_FAILED");return -1;
  }
  char path[256];
- if(snprintf(path,sizeof(path),"%s/weread-screenshot-XXXXXX.png",dir)>=(int)sizeof(path))return;
+ if(snprintf(path,sizeof(path),"%s/weread-screenshot-XXXXXX.png",dir)>=(int)sizeof(path))return -1;
  int fd=mkstemps(path,4);
- if(fd<0){perror("LIVE_DISPLAY_SCREENSHOT_CREATE");return;}
+ if(fd<0){perror("LIVE_DISPLAY_SCREENSHOT_CREATE");return -1;}
  FILE *file=fdopen(fd,"wb");
- if(!file){close(fd);unlink(path);return;}
+ if(!file){close(fd);unlink(path);return -1;}
  struct snapshot_output out={.file=file};
  int ok=stbi_write_png_to_func(snapshot_write,&out,WIDTH,HEIGHT,1,pixels,WIDTH);
  if(fclose(file)!=0)out.failed=1;
- if(ok && !out.failed)printf("LIVE_DISPLAY_SCREENSHOT_SAVED %s\n",path);
- else{unlink(path);puts("LIVE_DISPLAY_SCREENSHOT_WRITE_FAILED");}
+ if(ok && !out.failed){printf("LIVE_DISPLAY_SCREENSHOT_SAVED %s\n",path);return 1;}
+ unlink(path);puts("LIVE_DISPLAY_SCREENSHOT_WRITE_FAILED");return -1;
 }
 static int consume_refresh_request(void){
  const char *path="/tmp/kobo-android-runtime/lab/interactive-refresh-request";
@@ -354,10 +354,21 @@ int main(int argc,char **argv){
  printf("LIVE_DISPLAY_SAVED_SCREEN bytes=%zu packed=%zu\n",saved.size,saved_rle?saved_rle_n:saved.size);
  printf("LIVE_DISPLAY_HANDOFF independent=%d\n",independent);
  printf("LIVE_DISPLAY_STARTED timeout=%ld source=%dx%d physical=%dx%d\n",seconds,WIDTH,HEIGHT,WIDTH*SCALE,HEIGHT*SCALE);
+ double snapshot_notice_until=0;
  while(!interrupted && now()<deadline){
   struct timespec delay={0,poll_ns};nanosleep(&delay,NULL);
   if(independent&&!reading_valid())goto cleanup;
-  capture_requested_frame(previous,frames!=0);
+  int snapshot=capture_requested_frame(previous,frames!=0);
+  if(snapshot){
+   FBInkConfig notice={0};notice.is_quiet=true;notice.is_centered=true;
+   notice.row=-3;notice.fontmult=3;notice.wfm_mode=WFM_GC16;
+   if(fbink_print(fb,snapshot>0?"PNG saved: snapshot/":"Screenshot failed",&notice)>=0){
+    fbink_wait_for_complete(fb,LAST_MARKER);
+    snapshot_notice_until=now()+1.2;
+   }
+  }
+  if(snapshot_notice_until>now())continue;
+  if(snapshot_notice_until){refresh_pending=1;snapshot_notice_until=0;}
   int request=consume_refresh_request();if(request<0)goto cleanup;if(request)refresh_pending=1;
   uint32_t before[6],after[6];int st=read_state(state_fd,before);if(st<0)goto cleanup;
   if(st>0){busy_skipped++;continue;}

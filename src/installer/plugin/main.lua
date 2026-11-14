@@ -74,33 +74,6 @@ local function uninstall(state_of)
     })
 end
 
--- Installed: the launcher module, with two extra menu entries.
-if exists(base .. "installed") then
-    local ok, mod = pcall(dofile, base .. "resident-v188/plugin-main-resident.lua")
-    if ok and type(mod) == "table" and mod.addToMainMenu then
-        local launcher_menu = mod.addToMainMenu
-        function mod:addToMainMenu(items)
-            launcher_menu(self, items)
-            local entry = items.weread_kobo
-            if not entry then return end
-            local ctl = base .. "resident-v188/resident-ctl.sh"
-            local function state()
-                local p = io.popen("/bin/sh " .. ctl .. " status 2>/dev/null")
-                local v = p and p:read("*l") or "none"
-                if p then p:close() end
-                return v
-            end
-            entry.sub_item_table[#entry.sub_item_table].separator = true
-            if exists(plugin_dir .. "/payload/install.sh") then
-                table.insert(entry.sub_item_table, { text = "删除安装包（释放空间）", callback = removePayload })
-            end
-            table.insert(entry.sub_item_table, { text = "卸载", callback = function() uninstall(state) end })
-        end
-        return mod
-    end
-    logger.warn("wereadkobo: launcher failed to load", mod)
-end
-
 -- Not installed: the installer.
 local Installer = WidgetContainer:extend { name = "wereadkobo", is_doc_only = false }
 local progress_file = plugin_dir .. "/install.progress"
@@ -168,12 +141,12 @@ function Installer:watch(show)
             self.task = nil
             if kind == "done" then
                 UIManager:show(ConfirmBox:new {
-                    text = "微信读书 1.8.8 安装完成。\n\n重启 KOReader 后，在“工具”菜单的“微信读书 1.8.8（安装版）”里启动。第一次启动约需 2 分钟，之后同意协议并扫码登录。\n\n现在重启 KOReader？",
+                    text = self.upgrade and "升级完成。现在重启 KOReader？" or "微信读书 1.8.8 安装完成。\n\n重启 KOReader 后，在“工具”菜单的“微信读书 1.8.8（安装版）”里启动。第一次启动约需 2 分钟，之后同意协议并扫码登录。\n\n现在重启 KOReader？",
                     ok_text = "重启",
                     ok_callback = function() UIManager:restartKOReader() end,
                 })
             else
-                UIManager:show(InfoMessage:new { text = "安装失败（错误 " .. tostring(code) .. "）：\n" .. (text or "") .. "\n\n已清理本次写入的文件，可以重试。日志：" .. plugin_dir .. "/install.log" })
+                UIManager:show(InfoMessage:new { text = "安装失败（错误 " .. tostring(code) .. "）：\n" .. (text or "") .. "\n\n日志：" .. plugin_dir .. "/install.log" })
             end
             return
         end
@@ -199,15 +172,16 @@ function Installer:watch(show)
     self.task()
 end
 
-function Installer:start()
+function Installer:start(upgrade)
+    self.upgrade = upgrade
     if installState() == "running" and installerAlive() then self:watch(true) return end
     if not exists(plugin_dir .. "/payload/install.sh") then
         UIManager:show(InfoMessage:new { text = "安装包不完整：缺少 payload 目录。请把整个 wereadkobo.koplugin 文件夹复制到 koreader/plugins。", timeout = 8 })
         return
     end
     UIManager:show(ConfirmBox:new {
-        text = "安装微信读书 1.8.8（Android 7 运行环境）？\n\n· 需要约 2.3 GB 存储空间，大约 5–10 分钟\n· 安装期间请接上电源，不要连接 USB 传输文件，也不要关机\n· 进度条点按可隐藏，安装继续；菜单“查看安装进度”可再显示\n· 安装完成后重启 KOReader 即可使用",
-        ok_text = "安装",
+        text = upgrade and "原地升级微信读书 1.8.8？请先关闭后台 Android。升级保留现有阅读数据、设置、截图和加速文件。" or "安装微信读书 1.8.8（Android 7 运行环境）？\n\n· 需要约 2.3 GB 存储空间，大约 5–10 分钟\n· 安装期间请接上电源，不要连接 USB 传输文件，也不要关机\n· 进度条点按可隐藏，安装继续；菜单“查看安装进度”可再显示\n· 安装完成后重启 KOReader 即可使用",
+        ok_text = upgrade and "升级" or "安装",
         ok_callback = function()
             os.remove(state_file); os.remove(progress_file); os.remove(plugin_dir .. "/install.pid")
             local cmd = "/usr/bin/setsid " .. q(plugin_dir .. "/payload/fd-clean-exec") .. " /bin/sh " .. q(plugin_dir .. "/payload/install.sh") .. " " .. q(plugin_dir)
@@ -238,6 +212,34 @@ function Installer:addToMainMenu(items)
             end },
         },
     }
+end
+
+-- Installed: the launcher module, with two extra menu entries.
+if exists(base .. "installed") then
+    local ok, mod = pcall(dofile, base .. "resident-v188/plugin-main-resident.lua")
+    if ok and type(mod) == "table" and mod.addToMainMenu then
+        local launcher_menu = mod.addToMainMenu
+        function mod:addToMainMenu(items)
+            launcher_menu(self, items)
+            local entry = items.weread_kobo
+            if not entry then return end
+            local ctl = base .. "resident-v188/resident-ctl.sh"
+            local function state()
+                local p = io.popen("/bin/sh " .. ctl .. " status 2>/dev/null")
+                local v = p and p:read("*l") or "none"
+                if p then p:close() end
+                return v
+            end
+            entry.sub_item_table[#entry.sub_item_table].separator = true
+            if exists(plugin_dir .. "/payload/install.sh") then
+                table.insert(entry.sub_item_table, { text = "原地升级", callback = function() Installer:start(true) end })
+                table.insert(entry.sub_item_table, { text = "删除安装包（释放空间）", callback = removePayload })
+            end
+            table.insert(entry.sub_item_table, { text = "卸载", callback = function() uninstall(state) end })
+        end
+        return mod
+    end
+    logger.warn("wereadkobo: launcher failed to load", mod)
 end
 
 return Installer

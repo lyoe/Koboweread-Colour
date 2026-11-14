@@ -49,9 +49,102 @@ kver=$(uname -r)
 # kernels.list: "RELEASE FIRMWARE" per kernel this package has modules for.
 grep -q "^$kver " "$pl/kernels.list" 2>/dev/null || fail 12 "这个固件的内核还不受支持（当前内核 $kver；支持的固件：$(awk '{printf "%s ", $2}' "$pl/kernels.list" 2>/dev/null)）"
 [ -x /mnt/onboard/.adds/koreader/luajit ] || fail 13 "KOReader 不在 /mnt/onboard/.adds/koreader"
-[ ! -e "$base" ] || fail 14 "已经安装过（$base 已存在）"
+
 if grep -q ' /tmp/kobo-android-runtime ' /proc/mounts || [ -e /dev/binder ];then fail 15 "另一个 Android 正在运行，请先关闭";fi
 for f in host.tar.gz rootfs.tar.xz SHA256SUMS apk-meta dirtimes kernels.list;do [ -f "$pl/$f" ] || fail 16 "安装包缺少 $f";done
+# Host-only upgrade. The transaction directory doubles as the launch guard.
+upgrade=$base/.host-upgrade
+rollback_upgrade(){
+ [ -f "$upgrade/journal" ] || return 0
+ while IFS= read -r f;do
+  if [ -f "$upgrade/old/$f" ];then
+   cp -p "$upgrade/old/$f" "$base/$f.upgrade-new" &&
+    mv "$base/$f.upgrade-new" "$base/$f" || return 1
+  else
+   rm -f "$base/$f" "$base/$f.upgrade-new" || return 1
+  fi
+ done < "$upgrade/journal"
+ sync
+}
+if [ -e "$base" ];then
+ [ -d "$base" ] && [ ! -L "$base" ] && [ -f "$base/installed" ] &&
+  grep -qx 'version=1.8.8' "$base/installed" && [ -s "$base/graphics-v188.img" ] ||
+  fail 14 "仅支持同版本原地升级"
+ lock=$base/weread-launch.lock
+ if [ -e "$lock" ];then
+  read -r lock_pid lock_start lock_boot lock_kind < "$lock/owner" || fail 15 "请先关闭后台 Android"
+  [ "$lock_kind" = upgrade ] &&
+   { [ "$lock_boot" != "$(cat /proc/sys/kernel/random/boot_id)" ] ||
+     [ "$lock_start" != "$(awk '{print $22}' "/proc/$lock_pid/stat" 2>/dev/null)" ]; } ||
+   fail 15 "请先关闭后台 Android"
+  rm "$lock/owner" && rmdir "$lock" || fail 26 "无法清理上次升级锁"
+ fi
+ progress 2 5 "校验升级包"
+ (cd "$pl" && sha256sum -c SHA256SUMS) || fail 20 "安装包校验失败"
+ [ -s "$pl/launcher-cert" ] && grep -q '  launcher-cert$' "$pl/SHA256SUMS" ||
+  fail 24 "升级包缺少启动器签名信息"
+ release_upgrade_lock(){
+  if [ "${owns_upgrade_lock:-0}" = 1 ];then rm -f "$lock/owner";rmdir "$lock";fi
+ }
+ upgrade_fail(){
+  if rollback_upgrade;then rm -rf "$upgrade";else release_upgrade_lock;fail 26 "升级恢复失败，请保留备份并重试";fi
+  release_upgrade_lock
+  fail 28 "$1，已恢复原组件"
+ }
+ trap 'upgrade_fail 被中断' INT TERM
+ if ! mkdir "$lock" 2>/dev/null;then fail 15 "Android 正在启动";fi
+ owns_upgrade_lock=1
+ printf '%s %s %s upgrade\n' "$$" "$(awk '{print $22}' /proc/$$/stat)" "$(cat /proc/sys/kernel/random/boot_id)" > "$lock/owner" ||
+  upgrade_fail "无法记录升级锁"
+ if [ -d "$upgrade" ];then
+  rollback_upgrade || { release_upgrade_lock;fail 26 "上次升级恢复失败"; }
+  rm -rf "$upgrade" || { release_upgrade_lock;fail 26 "无法清理上次升级"; }
+ fi
+ cert=$(cat "$pl/launcher-cert")
+ signature=$(unzip -p "$base/resident-v188/KoboProbe-resident.apk" META-INF/LAB.RSA | od -An -v -tx1 | tr -d ' \n')
+ case "$signature" in *"$cert"*) :;; *) release_upgrade_lock;fail 27 "启动器签名不同，无法保留现有 Android 镜像";;esac
+ mkdir "$upgrade" || { release_upgrade_lock;fail 25 "无法锁定升级目录"; }
+ printf '%s\n' "$$" > "$upgrade/pid" || upgrade_fail "无法记录升级进程"
+ progress 3 20 "备份并准备组件"
+ mkdir "$upgrade/new" "$upgrade/old" &&
+  tar -xzf "$pl/host.tar.gz" -C "$upgrade/new" || upgrade_fail "解包失败"
+ cd "$upgrade/new" || upgrade_fail "无法打开暂存目录"
+ # Update package-owned files only. Preserve flags, settings and data.
+ find . -type f | sed 's@^./@@' | while IFS= read -r f;do
+  case "$f" in
+   device-profile|display-cadence|display-profile|resident-*/io-tune|fast-*/*-disabled|fast-*/*-enabled)
+    [ ! -e "$base/$f" ] || continue
+    # A missing switch can be an explicit user choice.
+    case "$f" in fast-*/*-disabled|fast-*/*-enabled) continue;;esac;;
+  esac
+  printf '%s\n' "$f"
+ done > "$upgrade/files"
+ sed '/^package=/d' "$base/installed" > installed &&
+  printf 'package=%s\n' "$(cat "$pl/package-version")" >> installed || upgrade_fail "无法更新安装记录"
+ echo installed >> "$upgrade/files"
+ while IFS= read -r f;do
+  if [ -e "$base/$f" ];then
+   mkdir -p "$upgrade/old/$(dirname "$f")" &&
+    cp -p "$base/$f" "$upgrade/old/$f" || upgrade_fail "备份失败"
+  fi
+ done < "$upgrade/files"
+ cp "$upgrade/files" "$upgrade/journal.new" && mv "$upgrade/journal.new" "$upgrade/journal" || upgrade_fail "无法记录回滚清单"
+ sync
+ progress 4 55 "替换并核对组件"
+ while IFS= read -r f;do
+  mkdir -p "$base/$(dirname "$f")" && cp -p "$f" "$base/$f.upgrade-new" &&
+   mv "$base/$f.upgrade-new" "$base/$f" && cmp -s "$f" "$base/$f" ||
+   upgrade_fail "组件写入或校验失败"
+ done < "$upgrade/files"
+ sync
+ cd /
+ rm "$upgrade/journal" || upgrade_fail "无法提交升级"
+ release_upgrade_lock
+ rm -rf "$upgrade"
+ progress 7 100 "升级完成"
+ printf 'done\n' > "$pd/install.state"
+ exit 0
+fi
 apk_name=weread-1.8.8.apk
 apk=$pd/$apk_name
 if [ -f "$pl/weread-apk.sha256" ];then
