@@ -26,7 +26,7 @@ public final class HomeActivity extends Activity {
  private static final File STARTING=new File("/data/local/tmp/kobo-resident/weread-starting");
  private static final String STARTING_TEXT="正在打开微信读书，完成后自动打开。";
  private static final String STARTING_PAUSED_TEXT="正在打开微信读书，请稍候。";
- private boolean openPending,homeResumed;private int pendingTicks;
+ private boolean openPending,homeResumed;
  private final Handler handler=new Handler();
  // Press feedback: a pressed button turns black (white text) until its action
  // finishes, the launcher is shown again, or 3 s pass without a result. A
@@ -76,13 +76,13 @@ public final class HomeActivity extends Activity {
   setContentView(screen);
  }
  private void residentStatus(){
-  boolean starting=openPending||STARTING.isFile();
+  boolean starting=STARTING.isFile();
   boolean ready=VERIFIED.isFile();
-  status.setText(starting?STARTING_TEXT:ready?"微信读书已就绪":"Android 已就绪");
+  status.setText(openPending?"正在返回微信读书…":starting?STARTING_TEXT:ready?"微信读书已就绪":"Android 已就绪");
   String destination=readLine(new File("/data/local/tmp/kobo-resident/return-destination"));
-  openButton.setText(starting?"正在打开微信读书…":ready&&"3".equals(destination)?"继续阅读":
+  openButton.setText(openPending?"正在返回…":starting?"正在打开微信读书…":ready&&"3".equals(destination)?"继续阅读":
    ready&&"2".equals(destination)?"返回书架":"打开微信读书");
-  openButton.setEnabled(!starting);
+  openButton.setEnabled(!starting&&!openPending);
   accelerationStatus.setText(accelerationText(readTuning(TUNING)));
   handler.removeCallbacks(startupStatus);
   if(starting&&homeResumed)handler.postDelayed(startupStatus,1000);
@@ -173,7 +173,7 @@ public final class HomeActivity extends Activity {
   if(note!=null){TextView n=text(left,note,14,4);n.setTextColor(0xFF333333);if(notes!=null)notes[index]=n;}
   r.addView(left,new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,1));
   TextView b=new TextView(this);b.setTextSize(18);b.setGravity(Gravity.CENTER);b.setPadding(0,10,0,10);
-  LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(130,LinearLayout.LayoutParams.WRAP_CONTENT);bp.leftMargin=24;r.addView(b,bp);
+  LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams("翻页效果".equals(title)?220:130,LinearLayout.LayoutParams.WRAP_CONTENT);bp.leftMargin=24;r.addView(b,bp);
   r.setClickable(true);r.setOnClickListener(click);
   parent.addView(r);line(parent);return b;
  }
@@ -238,13 +238,13 @@ public final class HomeActivity extends Activity {
    }
   }
   }
+  tuneStatus=text(root,cur==null?"暂时读不到当前设置，请重启 Android 后再试。":"设置保存后，重启微信读书生效。",17,16);
   if(!advanced){
   restartButton=button(root,"重启微信读书（设置随之生效）",new View.OnClickListener(){public void onClick(View v){confirm(restartButton,"再点一次：重启微信读书（约 1 分钟）","restart");}});
   compileButton=button(root,"重新编译加速文件并重启",new View.OnClickListener(){public void onClick(View v){confirm(compileButton,"再点一次：编译并重启（约 3 分钟）","compile");}});
   text(root,"编译用的是阅读时记录的常用代码，读过一段时间后再编译效果更好。"+compileInfo,14,16).setTextColor(0xFF333333);
   if(cur!=null)button(root,"高级设置",new View.OnClickListener(){public void onClick(View v){tuningLayout(true);}});
   }
-  tuneStatus=text(root,cur==null?"暂时读不到当前设置，请重启 Android 后再试。":"点按切换，立即保存；重启微信读书后生效。",15,16);
   setContentView(sv);refreshTuning();sendTune();
   System.out.println("APK_RESIDENT_TUNING_SHOWN loaded="+(cur!=null));
  }
@@ -263,7 +263,7 @@ public final class HomeActivity extends Activity {
   if(idleChoice!=null)idleChoice.setText("自动休眠等待时间  "+(wantIdle/60)+" 分钟"+(wantIdle!=startIdle?"（重启后生效）":""));
   for(int i=0;i<TUNES.length;i++){
    if(tuneBoxes[i]==null)continue;
-   tuneBoxes[i].setText(want[i]?"开":"关");box(tuneBoxes[i],want[i]);
+   tuneBoxes[i].setText("page-wipe".equals(TUNES[i][0])?(want[i]?"分区渐显":"普通翻页"):(want[i]?"开":"关"));box(tuneBoxes[i],want[i]);
    tuneNotes[i].setText(TUNES[i][2]+(want[i]!=started[i]?"（已改，重启后生效）":""));
   }
   for(int i=0;i<DISPLAYS.length;i++){
@@ -318,39 +318,31 @@ public final class HomeActivity extends Activity {
  }};
  @Override public void onBackPressed(){if(tuningShown){leaveTuningPage();return;}super.onBackPressed();}
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);if(tuningShown){residentLayout();residentStatus();}}
- // A press while WeRead is still starting waits for it: once the host removes
- // STARTING, WeRead is opened directly if the launch was verified; otherwise
- // the press can be repeated.
- private final Runnable pendingCheck=new Runnable(){public void run(){
+ private final Runnable openTimeout=new Runnable(){public void run(){
   if(!openPending)return;
-  // WeRead normally comes to the front by itself when it is ready (this
-  // launcher is then paused): starting it again from here would relaunch its
-  // entry activity on top of the reader. Open it only if the launcher is
-  // still what the user sees.
-  if(!STARTING.isFile()&&VERIFIED.isFile()){openPending=false;look(openButton,false);if(homeResumed)openWeRead();else System.out.println("APK_RESIDENT_OPEN_PENDING_ALREADY_FRONT");return;}
-  if(!STARTING.isFile()||++pendingTicks>150){openPending=false;look(openButton,false);status.setText("微信读书未能启动，请再按一次“打开微信读书”。");System.out.println("APK_RESIDENT_OPEN_PENDING_GAVE_UP");return;}
-  handler.postDelayed(this,1000);
+  openPending=false;
+  if(homeResumed&&!tuningShown){
+   look(openButton,false);residentStatus();
+   if(!STARTING.isFile())status.setText("暂未返回微信读书，请重试。");
+  }
  }};
  private void openWeRead(){
-  if(STARTING.isFile()){
-   status.setText(STARTING_TEXT);System.out.println("APK_RESIDENT_OPEN_PENDING_STARTING");
-   if(!openPending){openPending=true;pendingTicks=0;handler.postDelayed(pendingCheck,1000);}
-   return;
-  }
-  if(VERIFIED.isFile()){
-   request("resume-weread","正在返回微信读书…");return;
-  }
-  // The first opening in a residency goes through the host's verified launch.
-  request("open-weread","正在校验并打开微信读书…");
+  if(openPending||STARTING.isFile())return;
+  boolean resume=VERIFIED.isFile();
+  if(!request(resume?"resume-weread":"open-weread",resume?"正在返回微信读书…":"正在打开微信读书…"))return;
+  openPending=true;
+  openButton.setEnabled(false);
+  openButton.setText(resume?"正在返回…":"正在打开微信读书…");
+  handler.postDelayed(openTimeout,resume?15000:30000);
  }
- private void request(String kind,String message){
+ private boolean request(String kind,String message){
   File dir=getFilesDir(),pending=new File(dir,"resident-request.pending"),done=new File(dir,"resident-request");
   try{
-   if(done.exists()){status.setText("上一个操作仍在处理，请稍候。");return;}
+   if(done.exists()){status.setText("上一个操作仍在处理，请稍候。");return false;}
    try(FileOutputStream out=new FileOutputStream(pending)){out.write((kind+"\n").getBytes("UTF-8"));}
    if(!pending.renameTo(done))throw new java.io.IOException("rename failed");
-   status.setText(message);System.out.println("APK_RESIDENT_REQUEST kind="+kind);
-  }catch(Exception error){pending.delete();status.setText("无法发送请求："+error.getMessage());}
+   status.setText(message);System.out.println("APK_RESIDENT_REQUEST kind="+kind);return true;
+  }catch(Exception error){pending.delete();status.setText("无法发送请求："+error.getMessage());return false;}
  }
  @Override protected void onResume(){super.onResume();homeResumed=true;
   for(TextView b:buttons)if(b!=openButton||!openPending)look(b,false);
@@ -365,5 +357,5 @@ public final class HomeActivity extends Activity {
  }
  // The prewarm launch takes input focus from this launcher at once, while its
  // picture stays on screen until WeRead draws (~20 s): say so on it.
- @Override protected void onPause(){homeResumed=false;if(resident&&STARTING.isFile()){status.setText(STARTING_PAUSED_TEXT);System.out.println("APK_RESIDENT_PAUSED_STARTING");}if(launched)leftHome=true;super.onPause();}
+ @Override protected void onPause(){homeResumed=false;openPending=false;handler.removeCallbacks(openTimeout);if(resident&&STARTING.isFile()){status.setText(STARTING_PAUSED_TEXT);System.out.println("APK_RESIDENT_PAUSED_STARTING");}if(launched)leftHome=true;super.onPause();}
 }

@@ -174,6 +174,47 @@ function WeReadLab:closeProgress()
         self.progress_widget = nil
     end
 end
+function WeReadLab:showStartupCard(phase)
+    self:closeProgress()
+    self.progress_phase = phase
+    self.progress_widget = InfoMessage:new {
+        text = "微信读书\n\n" .. (phases[phase] or "正在准备运行环境。")
+            .. "\n\n首次登录后，请等待书架同步和书籍下载。",
+        dismiss_callback = function() self.progress_widget = nil; self.show_progress = false end,
+    }
+    UIManager:show(self.progress_widget)
+end
+function WeReadLab:showStartupFailure()
+    local ButtonDialog = require("ui/widget/buttondialog")
+    local value = read(base .. "v197-launch.state") or ""
+    local phase = value:match("\nphase=([%a_]+)\n")
+    local code = tonumber(value:match("\nexit=(%d+)\n"))
+    local summary = failures[code] or "微信读书启动未完成。"
+    local dialog
+    dialog = ButtonDialog:new {
+        title = summary .. "\n" .. (phases[phase] or "正在准备运行环境。"),
+        buttons = {
+            {
+                { text = "重试", callback = function()
+                    if residentState() ~= "none" or controllerAlive()
+                        or read(base .. "weread-launch.lock/owner") then
+                        UIManager:show(InfoMessage:new { text = "正在清理上一次会话，请稍后重试。", timeout = 4 })
+                        return
+                    end
+                    UIManager:close(dialog)
+                    if self.startup_tuning then self:openTuning() else self:openResident() end
+                end },
+                { text = "返回 KOReader", callback = function() UIManager:close(dialog) end },
+            },
+            {
+                { text = "查看错误码", callback = function()
+                    UIManager:show(InfoMessage:new { text = "错误码 " .. tostring(code or "未知") })
+                end },
+            },
+        },
+    }
+    UIManager:show(dialog)
+end
 function WeReadLab:updateProgress()
     if not self.show_progress then return end
     if stage() ~= "starting" then
@@ -182,13 +223,7 @@ function WeReadLab:updateProgress()
     end
     local phase = (read(base .. "v197-launch.state") or ""):match("\nphase=([%a_]+)\n")
     if self.progress_widget and self.progress_phase == phase then return end
-    self:closeProgress()
-    self.progress_phase = phase
-    self.progress_widget = InfoMessage:new {
-        text = (phases[phase] or "正在准备运行环境。") .. "\n\n点按可收起提示，启动会继续。",
-        dismiss_callback = function() self.progress_widget = nil; self.show_progress = false end,
-    }
-    UIManager:show(self.progress_widget)
+    self:showStartupCard(phase)
 end
 -- Edge swipes in Android set the light behind KOReader's back, and KOReader
 -- keeps its own copy of brightness and warmth: take the hardware values over
@@ -276,7 +311,7 @@ function WeReadLab:holdAwake(grace)
         else
             local show_failure = self.show_progress and stage() == "failed"
             self:releaseAwake()
-            if show_failure then UIManager:show(InfoMessage:new { text = statusText() }) end
+            if show_failure then self:showStartupFailure() end
             local ok, err = pcall(syncFrontlight)
             if not ok then logger.warn("WeReadLab197 frontlight sync failed", err) end
             self:suspendIfRequested()
@@ -445,15 +480,9 @@ function WeReadLab:openResident(tuning)
     end
     self:holdAwake(5)
     self.show_progress = true
-    self.progress_phase = nil
+    self.startup_tuning = tuning
     os.execute("/usr/bin/setsid " .. base .. "fd-clean-exec /bin/sh " .. base .. "resident-v197/launch-resident.sh </dev/null >/dev/null 2>&1 &")
-    self.launch_message = InfoMessage:new {
-        text = "正在准备运行环境。\n\n首次启动可能较慢，请保持 Wi-Fi 连接。" .. (warnings(true) and ("\n\n" .. warnings(true)) or ""),
-        timeout = 12,
-        dismiss_callback = function() if self.progress_widget == self.launch_message then self.progress_widget = nil; self.show_progress = false end end,
-    }
-    self.progress_widget = self.launch_message
-    UIManager:show(self.launch_message)
+    self:showStartupCard("runtime_begin")
 end
 -- "阅读优化" (2026-11-11): the launcher's settings page. On a fresh start the
 -- automatic WeRead start is skipped once (tuning-once, read by
