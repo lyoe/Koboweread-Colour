@@ -412,6 +412,9 @@ resident_main(){
   fi
   if [ "$mode" = foreground ];then
    [ "$app_word" != open-weread ] || open_weread
+   if [ "$app_word" = resume-weread ] && [ -f "$marker_dir/weread-verified" ];then
+    helper_request helper-resume || open_weread
+   fi
    if [ "$app_word" = background ] || [ -e "$root/lab/interactive-session-finish" ];then
     finish_reason=
     if [ -f "$root/lab/interactive-session-finish" ] && [ ! -L "$root/lab/interactive-session-finish" ];then

@@ -79,14 +79,26 @@ public final class HomeActivity extends Activity {
   boolean starting=openPending||STARTING.isFile();
   boolean ready=VERIFIED.isFile();
   status.setText(starting?STARTING_TEXT:ready?"微信读书已就绪":"Android 已就绪");
-  openButton.setText(ready&&!starting?"继续阅读":"打开微信读书");
+  String destination=readLine(new File("/data/local/tmp/kobo-resident/return-destination"));
+  openButton.setText(starting?"正在打开微信读书…":ready&&"3".equals(destination)?"继续阅读":
+   ready&&"2".equals(destination)?"返回书架":"打开微信读书");
+  openButton.setEnabled(!starting);
   accelerationStatus.setText(accelerationText(readTuning(TUNING)));
+  handler.removeCallbacks(startupStatus);
+  if(starting&&homeResumed)handler.postDelayed(startupStatus,1000);
  }
+ private final Runnable startupStatus=new Runnable(){public void run(){
+  if(homeResumed&&!tuningShown)residentStatus();
+ }};
  private static String accelerationText(Map<String,String> tuning){
   if(tuning==null)return "加速状态暂未就绪";
   String state=tuning.get("acceleration"), compile=tuning.get("compile");
   boolean failed=compile!=null&&!compile.startsWith("none")&&!compile.startsWith("0 ");
-  if("active".equals(state))return failed?"上次编译未完成，已有加速文件正在使用":"加速文件已加载";
+  if("active".equals(state)){
+   if(failed)return "上次编译未完成，已有加速文件正在使用";
+   String[] fields=compile==null?new String[0]:compile.split(" ");
+   return "加速文件已加载"+(fields.length>=4?" · "+fields[3].replace('_',' '):"");
+  }
   if("invalid".equals(state))return "加速文件校验失败，可重新编译";
   if("inactive".equals(state))return "加速文件本次未加载";
   if("missing".equals(state))return failed?"上次编译未完成，可重新编译":"尚未编译加速文件";
@@ -112,7 +124,7 @@ public final class HomeActivity extends Activity {
   {"poollow","后台任务低优先级","联网、写库让给翻页"},
   {"zram","内存压缩（zram）","相当于多约 30 MB 内存"},
   {"idle-suspend","超时自动休眠","电池供电时无操作达到所选时长后休眠，唤醒切回微信读书"},
-  {"page-wipe","实体键翻页动画","试验功能，实体翻页键触发分区渐显"},
+  {"page-wipe","翻页效果","开启后，实体翻页键触发分区渐显"},
   {"aosp-pinyin","AOSP 离线拼音","启用已安装的拼音键盘，重启微信读书后生效"}};
  private static final String[][] DISPLAYS={{"classic","标准（原显示方式）","c"},{"reagl","REAGL（减少残影）","r"},{"reagl-text","REAGL＋文字增强","t"}};
  private static final int[] IDLE_MINUTES={1,3,5,10,15,30};
@@ -165,7 +177,13 @@ public final class HomeActivity extends Activity {
   r.setClickable(true);r.setOnClickListener(click);
   parent.addView(r);line(parent);return b;
  }
- private void tuningLayout(){
+ private boolean advancedShown;
+ private void tuningLayout(){tuningLayout(false);}
+ private void leaveTuningPage(){
+  if(advancedShown)tuningLayout();
+  else{residentLayout();residentStatus();}
+ }
+ private void tuningLayout(boolean advanced){
   Map<String,String> cur=readTuning(TUNING),start=readTuning(TUNING_START);
   if(start==null)start=cur;
   if(cur!=null&&!tuneLoaded){
@@ -176,22 +194,26 @@ public final class HomeActivity extends Activity {
    sentWord=tuneWord();tuneLoaded=true;
   }
   if(cur!=null)compileInfo=compileText(cur.get("compile"));
-  tuningShown=true;buttons.clear();armed=null;
+  tuningShown=true;advancedShown=advanced;buttons.clear();armed=null;
+  java.util.Arrays.fill(tuneBoxes,null);java.util.Arrays.fill(tuneNotes,null);
+  java.util.Arrays.fill(displayBoxes,null);
+  restartButton=null;compileButton=null;
   ScrollView sv=new ScrollView(this);sv.setBackgroundColor(Color.WHITE);
   LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(48,48,48,48);sv.addView(root);
   LinearLayout head=new LinearLayout(this);head.setOrientation(LinearLayout.HORIZONTAL);head.setGravity(Gravity.CENTER_VERTICAL);
-  TextView title=new TextView(this);title.setText("阅读优化");title.setTextSize(28);title.setTextColor(Color.BLACK);
+  TextView title=new TextView(this);title.setText(advanced?"高级设置":"阅读优化");title.setTextSize(28);title.setTextColor(Color.BLACK);
   head.addView(title,new LinearLayout.LayoutParams(0,LinearLayout.LayoutParams.WRAP_CONTENT,1));
   TextView back=new TextView(this);back.setText("返回");back.setTextSize(18);back.setGravity(Gravity.CENTER);back.setPadding(36,12,36,12);look(back,false);
-  back.setClickable(true);back.setOnClickListener(new View.OnClickListener(){public void onClick(View v){residentLayout();residentStatus();}});head.addView(back);
+  back.setClickable(true);back.setOnClickListener(new View.OnClickListener(){public void onClick(View v){leaveTuningPage();}});head.addView(back);
   root.addView(head);
-  tuneStatus=text(root,cur==null?"暂时读不到当前设置，请重启 Android 后再试。":"点按切换，立即保存；重启微信读书后生效。",15,16);
-  text(root,accelerationText(cur),18,16);
+  if(!advanced)text(root,accelerationText(cur),18,16);
   text(root,"",6,0);line(root);
   idleChoice=null;
   if(cur!=null){
    for(int i=0;i<TUNES.length;i++){final int k=i;
-    if(!cur.containsKey(TUNES[i][0]))continue; // not in this WeRead version
+    String key=TUNES[i][0];
+    boolean common="idle-suspend".equals(key)||"page-wipe".equals(key);
+    if(!cur.containsKey(key)||common==advanced)continue;
     tuneBoxes[i]=row(root,TUNES[i][1],TUNES[i][2],new View.OnClickListener(){public void onClick(View v){want[k]=!want[k];refreshTuning();sendTune();}},tuneNotes,i);
     if(idleSupported&&"idle-suspend".equals(TUNES[i][0])){
      idleChoice=button(root,"",new View.OnClickListener(){public void onClick(View v){
@@ -209,15 +231,21 @@ public final class HomeActivity extends Activity {
      }});
     }
    }
+   if(!advanced){
    text(root,"显示效果",19,28);text(root,"",6,0);line(root);
    for(int i=0;i<DISPLAYS.length;i++){final int k=i;
     displayBoxes[i]=row(root,DISPLAYS[i][1],null,new View.OnClickListener(){public void onClick(View v){wantDisplay=DISPLAYS[k][0];refreshTuning();sendTune();}},null,i);
    }
   }
+  }
+  if(!advanced){
   restartButton=button(root,"重启微信读书（设置随之生效）",new View.OnClickListener(){public void onClick(View v){confirm(restartButton,"再点一次：重启微信读书（约 1 分钟）","restart");}});
   compileButton=button(root,"重新编译加速文件并重启",new View.OnClickListener(){public void onClick(View v){confirm(compileButton,"再点一次：编译并重启（约 3 分钟）","compile");}});
   text(root,"编译用的是阅读时记录的常用代码，读过一段时间后再编译效果更好。"+compileInfo,14,16).setTextColor(0xFF333333);
-  setContentView(sv);refreshTuning();
+  if(cur!=null)button(root,"高级设置",new View.OnClickListener(){public void onClick(View v){tuningLayout(true);}});
+  }
+  tuneStatus=text(root,cur==null?"暂时读不到当前设置，请重启 Android 后再试。":"点按切换，立即保存；重启微信读书后生效。",15,16);
+  setContentView(sv);refreshTuning();sendTune();
   System.out.println("APK_RESIDENT_TUNING_SHOWN loaded="+(cur!=null));
  }
  private static String compileText(String c){
@@ -284,11 +312,11 @@ public final class HomeActivity extends Activity {
   Map<String,String> cur=readTuning(TUNING);boolean ok=cur!=null&&wantDisplay.equals(cur.get("display"));
   for(int i=0;ok&&i<TUNES.length;i++)ok=!cur.containsKey(TUNES[i][0])||want[i]==!"0".equals(cur.get(TUNES[i][0]));
   if(ok&&idleSupported)ok=wantIdle==idleSeconds(cur);
-  boolean changed=!wantDisplay.equals(startDisplay)||(idleSupported&&wantIdle!=startIdle);for(int i=0;i<TUNES.length;i++)changed|=tuneBoxes[i]!=null&&want[i]!=started[i];
+  boolean changed=!wantDisplay.equals(startDisplay)||(idleSupported&&wantIdle!=startIdle);for(int i=0;i<TUNES.length;i++)changed|=cur!=null&&cur.containsKey(TUNES[i][0])&&want[i]!=started[i];
   if(restartButton!=null&&restartButton.getText().toString().startsWith("正在"))return;
   tuneStatus.setText(!ok?"设置还没保存好，请稍候再看。":changed?"已保存。点下面“重启微信读书”后生效。":"已保存，与当前运行的设置相同。");
  }};
- @Override public void onBackPressed(){if(tuningShown){residentLayout();residentStatus();return;}super.onBackPressed();}
+ @Override public void onBackPressed(){if(tuningShown){leaveTuningPage();return;}super.onBackPressed();}
  @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);if(tuningShown){residentLayout();residentStatus();}}
  // A press while WeRead is still starting waits for it: once the host removes
  // STARTING, WeRead is opened directly if the launch was verified; otherwise
@@ -310,8 +338,7 @@ public final class HomeActivity extends Activity {
    return;
   }
   if(VERIFIED.isFile()){
-   Intent launch=getPackageManager().getLaunchIntentForPackage("com.tencent.weread.eink");
-   if(launch!=null){launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);status.setText("正在打开微信读书…");System.out.println("APK_RESIDENT_OPEN_WEREAD_DIRECT");startActivity(launch);return;}
+   request("resume-weread","正在返回微信读书…");return;
   }
   // The first opening in a residency goes through the host's verified launch.
   request("open-weread","正在校验并打开微信读书…");

@@ -163,7 +163,7 @@ int main(int argc,char **argv){
 #endif
  // Declared before any goto cleanup: the cleanup path reads them.
  struct edge_light edge={0};struct test_swipe swipe={0};struct rotate_follow rot;rotate_init(&rot,resident);
- int key_fd=-1;struct forma_buttons physical_keys={0};unsigned page_keys=0,key_refreshes=0,key_exits=0,exit_holds=0;int key_refreshed=0;
+ int key_fd=-1;struct forma_buttons physical_keys={0};unsigned page_keys=0,key_refreshes=0,key_exits=0,exit_holds=0;int key_refreshed=0,power_home=0;
  if(interactive){
   key_fd=open_input_named("gpio-keys",O_RDONLY|O_NONBLOCK);
   char key_name[128]={0};unsigned long key_bits[(KEY_MAX+8*sizeof(long))/(8*sizeof(long))]={0};
@@ -269,8 +269,20 @@ int main(int argc,char **argv){
     if(key->type!=EV_KEY)continue;
     last_input=now();
     if(!physical_keys.pressed && key->value==1)key_refreshed=0;
+    // Claim only a fresh power press preceded by the current next-page key.
+    if(resident && key->code==116 && key->value==1 &&
+       physical_keys.pressed==next_bit && !physical_keys.blocked && !physical_keys.chord)
+     power_home=1;
     int power_exit=physical_keys.power_armed;
     int action=forma_button_event(&physical_keys,key->code,key->value,now());
+    if(power_home && key->code==116 && key->value==0 && power_exit){
+     power_home=0;
+     // Keep the remaining page key blocked until release, but consume power exit.
+     physical_keys.chord_action=FORMA_NONE;
+     if(button || down || hold.state){puts("HOST_RESIDENT_HOME_SKIPPED_TOUCH_ACTIVE");continue;}
+     int result=send_event(sock,6,0,0,&sequence);if(result<0){rc=29;goto cleanup;}
+     printf("HOST_RESIDENT_POWER_HOME_RELEASED ack=%d\n",result);continue;
+    }
     if(resident && action==FORMA_REFRESH){
      int previous=(key->code==194)!=(rot.applied==2);
      double held=now()-physical_keys.single_began[key->code==193?0:1];

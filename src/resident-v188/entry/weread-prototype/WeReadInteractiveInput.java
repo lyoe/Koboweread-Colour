@@ -34,7 +34,17 @@ public final class WeReadInteractiveInput {
   try{File tmp=new File("/lab/resident/"+name+".result.tmp");try(PrintWriter out=new PrintWriter(tmp)){out.println(text);}
    if(!tmp.renameTo(new File("/lab/resident/"+name+".result")))System.out.println("WEREAD_HELPER_REQUEST_ANSWER_FAILED "+name);}catch(Throwable error){error.printStackTrace();}
  }
- private static void startHome() throws Exception {
+ private static void startHome(LiveFocusClient live) throws Exception {
+  try{
+   int kind=live.query();
+   if(kind==2 || kind==3){
+   File marker=new File("/data/local/tmp/kobo-resident/return-destination");
+   File temporary=new File(marker.getPath()+".new");
+   try(FileOutputStream out=new FileOutputStream(temporary)){out.write(kind==3?'3':'2');out.write('\n');}
+   Os.chmod(temporary.getPath(),0644);
+   if(!temporary.renameTo(marker))System.out.println("WEREAD_HOME_DESTINATION_WRITE_FAILED");
+   }
+  }catch(Exception error){System.out.println("WEREAD_HOME_DESTINATION_WRITE_FAILED");}
   Intent home=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setClassName("com.kobo.lab.smoke","com.kobo.lab.smoke.HomeActivity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
   // Same call as the verified WeRead launch: no caller application record.
   Object manager=Class.forName("android.app.ActivityManagerNative").getMethod("getDefault").invoke(null);
@@ -43,7 +53,7 @@ public final class WeReadInteractiveInput {
   Object code=start.invoke(manager,null,"android",home,null,null,null,0,0,null,null,0);
   System.out.println("WEREAD_RESIDENT_HOME_STARTED code="+code);
  }
- private static void handleRequest(Context context,String name){
+ private static void handleRequest(Context context,LiveFocusClient liveFocus,String name){
   File request=new File("/lab/resident/"+name);String text=null;
   try{try(BufferedReader in=new BufferedReader(new FileReader(request))){text=in.readLine();}}catch(IOException error){}
   request.delete();
@@ -56,10 +66,22 @@ public final class WeReadInteractiveInput {
     Method launch=probe.getDeclaredMethod("verifyAndLaunch",Context.class,int.class);launch.setAccessible(true);
     long begin=SystemClock.uptimeMillis();launch.invoke(null,context,uid);
     System.out.println("WEREAD_HELPER_LAUNCH_DONE ms="+(SystemClock.uptimeMillis()-begin));
+   }else if("helper-resume".equals(name)){
+    android.app.ActivityManager am=(android.app.ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+    if(liveFocus.query()!=4)throw new IllegalStateException("Launcher focus lost");
+    for(android.app.ActivityManager.RunningTaskInfo task:am.getRunningTasks(16)){
+     if(task.baseActivity==null || task.topActivity==null ||
+       !"com.tencent.weread.eink".equals(task.baseActivity.getPackageName()) ||
+       !"com.tencent.weread.eink".equals(task.topActivity.getPackageName()))continue;
+     am.moveTaskToFront(task.id,0);
+     System.out.println("WEREAD_RESIDENT_TASK_RESUMED ms="+SystemClock.uptimeMillis()+" task="+task.id);
+     answer(name,"ok");return;
+    }
+    throw new IllegalStateException("WeRead task unavailable");
    }else if("helper-home".equals(name)){
     // 阅读优化 from the KOReader menu (2026-11-11): the launcher on top; it
     // opens its settings page from the host's open-tuning marker.
-    startHome();
+    startHome(liveFocus);
    }else{
     Intent intent=new Intent().setComponent(new android.content.ComponentName("com.tencent.weread.eink","com.tencent.weread.reader.segment.aidl.SegmentService"));
     Object am=Class.forName("android.app.ActivityManagerNative").getMethod("getDefault").invoke(null);Method start=null;
@@ -166,7 +188,7 @@ public final class WeReadInteractiveInput {
   if(resident){
    final Context requestContext=context;
    requests=new android.os.FileObserver("/lab/resident",android.os.FileObserver.MOVED_TO){public void onEvent(int event,String name){
-    if("helper-launch".equals(name) || "helper-seg".equals(name) || "helper-home".equals(name))handleRequest(requestContext,name);}};
+    if("helper-launch".equals(name) || "helper-seg".equals(name) || "helper-home".equals(name) || "helper-resume".equals(name))handleRequest(requestContext,live,name);}};
    requests.startWatching();
    System.out.println("WEREAD_HELPER_REQUESTS_READY");
   }
@@ -185,7 +207,7 @@ public final class WeReadInteractiveInput {
       // The HOME key itself cannot be used: this runtime has no keyguard
       // service, and PhoneWindowManager's HOME handling needs one.
       if(!resident || x!=0 || y!=0 || down)throw new SecurityException("Invalid home packet");
-      new Thread(new Runnable(){public void run(){try{startHome();}catch(Throwable error){error.printStackTrace();}}},"resident-home").start();
+      new Thread(new Runnable(){public void run(){try{startHome(live);}catch(Throwable error){error.printStackTrace();}}},"resident-home").start();
       out.writeInt(1);out.flush();continue;
      }
      if(action==7){
