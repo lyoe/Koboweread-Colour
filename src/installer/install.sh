@@ -147,13 +147,11 @@ if [ -e "$base" ];then
 fi
 apk_name=weread-1.8.8.apk
 apk=$pd/$apk_name
-if [ -f "$pl/weread-apk.sha256" ];then
- [ -f "$apk" ] || fail 21 "请自行下载 $apk_name，并放到 wereadkobo.koplugin 目录（与 main.lua 同级）"
- command -v unzip >/dev/null 2>&1 || fail 23 "设备缺少支持输出到标准输出的 unzip"
-else
- # Compatibility with the lab exporter, whose APK is in SHA256SUMS.
- apk=$pl/$apk_name
- grep -q "  $apk_name$" "$pl/SHA256SUMS" && [ -f "$apk" ] || fail 16 "安装包缺少 APK 校验信息"
+# Older lab packages supply the APK within payload.
+[ -f "$apk" ] || apk=$pl/$apk_name
+[ -f "$apk" ] || fail 21 "请自行下载 $apk_name，并放到 wereadkobo.koplugin 目录（与 main.lua 同级）"
+if grep -q ' lib/' "$pl/apk-meta";then
+ command -v unzip >/dev/null 2>&1 || fail 23 "设备缺少 unzip，无法提取 APK 原生库"
 fi
 # A run that was cut off (power, reset) leaves BASE.part: only its own output.
 if grep -q " $mnt " /proc/mounts;then umount "$mnt" || fail 18 "上次未完成的安装仍挂载着镜像";fi
@@ -162,13 +160,9 @@ free_kb=$(df -k /mnt/onboard | awk 'NR==2 {print $4}')
 [ "$free_kb" -ge $(( (image_mb + 300) * 1024 )) ] || fail 17 "存储空间不足：需要约 $((image_mb + 300)) MB，只剩 $((free_kb / 1024)) MB"
 
 progress 2 2 "校验安装包"
-( cd "$pl" && sha256sum -c SHA256SUMS ) || fail 20 "安装包校验失败，请重新复制"
-
-if [ -f "$pl/weread-apk.sha256" ];then
- expected=$(cat "$pl/weread-apk.sha256")
- actual=$(sha256sum "$apk") || fail 22 "无法读取 $apk_name"
- [ "${actual%% *}" = "$expected" ] || fail 22 "$apk_name 的 SHA-256 不匹配，请检查版本并重新复制"
-fi
+# Legacy lab manifests may list the bundled APK. Verify the other payload files.
+( cd "$pl" && awk -v apk="$apk_name" '$2 != apk' SHA256SUMS | sha256sum -c - ) ||
+ fail 20 "安装包校验失败，请重新复制"
 
 progress 3 6 "复制启动文件"
 made_part=1

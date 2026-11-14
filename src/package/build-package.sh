@@ -22,9 +22,9 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 top=$(CDPATH= cd -- "$here/../.." && pwd)
 ver=${1:?version 1.9.7 or 1.8.8}
 case "$ver" in
- 1.9.7) tag=v197;apk_sha=351105bda1ac58bc037c2d604982635a24018eb0f9b9964abeb5b84647565f1c
+ 1.9.7) tag=v197
         switches="anim-disabled appimage-disabled fontmap-disabled gcms-disabled heapmax8-disabled logsync-disabled memclass-disabled memtrim-disabled pagefix-disabled svcoff-disabled";;
- 1.8.8) tag=v188;apk_sha=f0b8ab65f08162559e7f67920b069785748e197459489c4e73fdbd75cc3ccba4
+ 1.8.8) tag=v188
         switches="anim-disabled appimage-disabled gcms-disabled heapmax8-disabled logsync-disabled memclass-disabled memtrim-disabled svcoff-disabled";;
  *) echo "PACKAGE_UNKNOWN_VERSION $ver (1.9.7 or 1.8.8)" >&2;exit 2;;
 esac
@@ -123,7 +123,6 @@ rm "$w/payload/rootfs.tar"
 k=$w/wereadkobo.koplugin;pl=$k/payload;mkdir -p "$pl"
 (cd "$h" && COPYFILE_DISABLE=1 tar --uid 0 --gid 0 --numeric-owner -czf "$pl/host.tar.gz" .) 2>/dev/null || (cd "$h" && tar --owner=0 --group=0 --numeric-owner -czf "$pl/host.tar.gz" .)
 mv "$w/payload/rootfs.tar.xz" "$w/payload/apk-meta" "$w/payload/dirtimes" "$pl/"
-printf '%s\n' "$apk_sha" > "$pl/weread-apk.sha256"
 for kd in "$top/kernels/"*/;do echo "$(basename "$kd") $(cat "$kd/firmware")";done > "$pl/kernels.list"
 cp "$top/src/installer/install.sh" "$pl/";cp "$h/fd-clean-exec" "$pl/"
 printf '%s\n' "$cert" > "$pl/launcher-cert"
@@ -136,7 +135,7 @@ mv "$k/README.txt.new" "$k/README.txt"
 if [ $tag != v188 ];then
  for f in "$pl/install.sh" "$k/main.lua" "$k/_meta.lua" "$k/README.txt";do V=$ver T=$tag perl -pi -e 's/1\.8\.8/$ENV{V}/g; s/v188/$ENV{T}/g' "$f";done
 fi
-(cd "$pl" && for f in host.tar.gz rootfs.tar.xz weread-apk.sha256 apk-meta dirtimes kernels.list install.sh fd-clean-exec launcher-cert package-version;do echo "$(sha256 "$f")  $f";done > SHA256SUMS)
+(cd "$pl" && for f in host.tar.gz rootfs.tar.xz apk-meta dirtimes kernels.list install.sh fd-clean-exec launcher-cert package-version;do echo "$(sha256 "$f")  $f";done > SHA256SUMS)
 chmod 0755 "$pl/install.sh" "$pl/fd-clean-exec"
 mkdir -p "$top/releases";zip=$top/releases/wereadkobo-$ver-$(date +%Y%m%d)-local.zip;n=2
 while [ -e "$zip" ];do zip=$top/releases/wereadkobo-$ver-$(date +%Y%m%d)-local-$n.zip;n=$((n+1));done
