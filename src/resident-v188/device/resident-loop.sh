@@ -24,7 +24,7 @@ resident_state(){
 take_request(){ # path owner_uid
  [ -e "$1" ] || [ -L "$1" ] || return 1
  if [ -L "$1" ] || [ ! -f "$1" ] || [ "$(stat -c %u "$1")" != "$2" ] || [ "$(stat -c %s "$1")" -gt 32 ];then rm -f "$1";echo RESIDENT_REQUEST_REJECTED;return 1;fi
- request_word=$(head -n 1 "$1" | tr -cd 'a-z-');rm -f "$1";return 0
+ request_word=$(head -n 1 "$1" | tr -cd 'a-z0-9-');rm -f "$1";return 0
 }
 # The bridge resumes KOReader itself; this is only for a bridge that died
 # without its restore path. It signals KOReader's own processes only.
