@@ -203,7 +203,7 @@ foreground_enter(){
  if [ -n "${KOBO_RESIDENT_GOVERNOR:-}" ] && [ -w "$gov" ];then echo performance > "$gov";fi
  "$base/resident-v188/resident-sched" normal
  rm -f "$root/lab/interactive-session-finish" "$root/lab/interactive-refresh-request" "$root/lab/interactive-screenshot-request"
- KOBO_PAGE_WIPE=$page_wipe "$root/lab/native-resolution/live-display" 43260 "$display_profile" > "$root/lab/native-resolution/live-display.log" 2>&1 &
+ KOBO_SNAPSHOT_DIR="$base/snapshot" KOBO_PAGE_WIPE=$page_wipe "$root/lab/native-resolution/live-display" 43260 "$display_profile" > "$root/lab/native-resolution/live-display.log" 2>&1 &
  bridge_pid=$!
  poll_until 80 'grep -q LIVE_DISPLAY_STARTED "$root/lab/native-resolution/live-display.log" || ! kill -0 "$bridge_pid" 2>/dev/null' || :
  kill -0 "$bridge_pid" 2>/dev/null || { cat "$root/lab/native-resolution/live-display.log";bridge_pid=;echo RESIDENT_DISPLAY_NOT_STARTED;return 115; }

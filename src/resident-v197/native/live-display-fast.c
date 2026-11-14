@@ -15,6 +15,10 @@
  */
 #define _GNU_SOURCE
 #include "fbink.h"
+#define STB_IMAGE_WRITE_STATIC
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_WRITE_NO_STDIO
+#include "stb/stb_image_write.h"
 #include "../runtime-prototype/close-inherited-fds.h"
 #include <fcntl.h>
 #include <signal.h>
@@ -42,19 +46,30 @@ static double now(void){struct timespec t;clock_gettime(CLOCK_MONOTONIC,&t);retu
 #include "../launcher-prototype/handoff-prototype/reading-lease.h"
 #include "refresh-policy.h"
 #include "display-quality.h"
-/* Save the bridge's last painted frame without allocating another framebuffer. */
+struct snapshot_output { FILE *file; int failed; };
+static void snapshot_write(void *context,void *data,int size){
+ struct snapshot_output *out=context;
+ if(fwrite(data,1,(size_t)size,out->file)!=(size_t)size)out->failed=1;
+}
 static void capture_requested_frame(const unsigned char *pixels,int have_frame){
  const char *request="/tmp/kobo-android-runtime/lab/interactive-screenshot-request";
  if(!have_frame || unlink(request)<0)return;
- char path[]="/mnt/onboard/weread-screenshot-XXXXXX.pgm";
+ const char *dir=getenv("KOBO_SNAPSHOT_DIR");
+ if(!dir || !*dir)return;
+ struct stat st;
+ if((mkdir(dir,0755)<0 && errno!=EEXIST) || lstat(dir,&st)<0 || !S_ISDIR(st.st_mode)){
+  puts("LIVE_DISPLAY_SCREENSHOT_DIRECTORY_FAILED");return;
+ }
+ char path[256];
+ if(snprintf(path,sizeof(path),"%s/weread-screenshot-XXXXXX.png",dir)>=(int)sizeof(path))return;
  int fd=mkstemps(path,4);
  if(fd<0){perror("LIVE_DISPLAY_SCREENSHOT_CREATE");return;}
- FILE *out=fdopen(fd,"wb");
- if(!out){close(fd);unlink(path);return;}
- int ok=fprintf(out,"P5\n%d %d\n255\n",WIDTH,HEIGHT)>0 &&
-        fwrite(pixels,1,(size_t)WIDTH*HEIGHT,out)==(size_t)WIDTH*HEIGHT;
- if(fclose(out)!=0)ok=0;
- if(ok)printf("LIVE_DISPLAY_SCREENSHOT_SAVED %s\n",path);
+ FILE *file=fdopen(fd,"wb");
+ if(!file){close(fd);unlink(path);return;}
+ struct snapshot_output out={.file=file};
+ int ok=stbi_write_png_to_func(snapshot_write,&out,WIDTH,HEIGHT,1,pixels,WIDTH);
+ if(fclose(file)!=0)out.failed=1;
+ if(ok && !out.failed)printf("LIVE_DISPLAY_SCREENSHOT_SAVED %s\n",path);
  else{unlink(path);puts("LIVE_DISPLAY_SCREENSHOT_WRITE_FAILED");}
 }
 static int consume_refresh_request(void){
