@@ -55,8 +55,12 @@ grep -q f0b8ab65f08162559e7f67920b069785748e197459489c4e73fdbd75cc3ccba4 "$t/fw/
 # on screen): framework/ActivityLauncher.java accepts a system package without
 # FLAG_PERSISTENT and lets systemReady start it once, for HOME (2026-11-10).
 mkdir -p "$t/fw198/source"
+sed 's/"com.android.defcontainer","com.kobo.lab.installed"/"com.android.defcontainer","com.android.inputmethod.pinyin","com.kobo.lab.installed"/' "$f/PackageProcessRegistry.java" > "$t/fw198/source/PackageProcessRegistry.java"
+install=$o/installation-prototype
+sed 's/if(strcmp(name,"com.kobo.lab.smoke")/if(strcmp(name,"com.android.inputmethod.pinyin") \&\& strcmp(name,"com.kobo.lab.smoke")/' "$install/process-broker.c" > "$t/fw198/source/process-broker.c"
+"$zig" cc -target arm-linux-musleabi -mcpu=cortex_a9 -static -O2 -I"$install" "$t/fw198/source/process-broker.c" -o "$out/pinyin-process-broker"
 cp "$here/framework/ActivityLauncher.java" "$t/fw198/source/ActivityLauncher.java"
-"$jdk/bin/javac" -nowarn -encoding UTF-8 -source 8 -target 8 -bootclasspath "$jar" -d "$t/fw198/classes" "$t/fw/source/FrameworkProbe.java" "$o/libra2-prototype/Libra2RuntimeCheck.java" "$f/SurfaceProbe.java" "$o/window-prototype/WindowClient.java" "$t/fw198/source/ActivityLauncher.java" "$f/OfflineSyncAdapterQueries.java" "$f/OfflineConnectivityService.java" "$t/fw/source/HostDefaultConnectivityService.java" "$f/HostWifiQueries.java" "$f/NoOutputAudioQueries.java" "$f/WebViewBootstrap.java" "$t/fw/source/InstallProbe.java" "$f/ApkIdentityCache.java" "$here/framework/LiveFocusService.java" "$f/AccessibilityBootstrap.java" "$f/StartupServiceGrace.java" "$f/StartupServiceGracePolicy.java" "$f/PackageProcessRegistry.java" 2>"$t/fw.log"
+"$jdk/bin/javac" -nowarn -encoding UTF-8 -source 8 -target 8 -bootclasspath "$jar" -d "$t/fw198/classes" "$t/fw/source/FrameworkProbe.java" "$o/libra2-prototype/Libra2RuntimeCheck.java" "$f/SurfaceProbe.java" "$o/window-prototype/WindowClient.java" "$t/fw198/source/ActivityLauncher.java" "$f/OfflineSyncAdapterQueries.java" "$f/OfflineConnectivityService.java" "$t/fw/source/HostDefaultConnectivityService.java" "$f/HostWifiQueries.java" "$f/NoOutputAudioQueries.java" "$f/WebViewBootstrap.java" "$t/fw/source/InstallProbe.java" "$f/ApkIdentityCache.java" "$here/framework/LiveFocusService.java" "$f/AccessibilityBootstrap.java" "$f/StartupServiceGrace.java" "$f/StartupServiceGracePolicy.java" "$t/fw198/source/PackageProcessRegistry.java" 2>"$t/fw198.log"
 "$jdk/bin/java" -cp "$d8" com.android.tools.r8.D8 --min-api 24 --lib "$jar" --output "$t/fw198/dex" "$t/fw198/classes/"*.class
 cp "$t/fw198/dex/classes.dex" "$out/install-framework-probe-resident-v188.dex"
 

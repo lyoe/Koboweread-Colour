@@ -95,7 +95,8 @@ public final class HomeActivity extends Activity {
   {"poollow","后台任务低优先级","联网、写库让给翻页"},
   {"zram","内存压缩（zram）","相当于多约 30 MB 内存"},
   {"idle-suspend","超时自动休眠","电池供电时 5 分钟无操作后休眠，唤醒切回微信读书"},
-  {"page-wipe","实体键翻页动画","试验功能，实体翻页键触发分区渐显"}};
+  {"page-wipe","实体键翻页动画","试验功能，实体翻页键触发分区渐显"},
+  {"aosp-pinyin","AOSP 离线拼音","启用已安装的拼音键盘，重启微信读书后生效"}};
  private static final String[][] DISPLAYS={{"classic","标准（原显示方式）","c"},{"reagl","REAGL（减少残影）","r"},{"reagl-text","REAGL＋文字增强","t"}};
  private boolean tuningShown,tuneLoaded;
  private final boolean[] want=new boolean[TUNES.length],started=new boolean[TUNES.length];

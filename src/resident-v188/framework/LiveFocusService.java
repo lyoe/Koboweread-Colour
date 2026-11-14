@@ -1,16 +1,20 @@
+import android.graphics.Region;
 import android.os.Binder;
+import android.os.IInterface;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.view.WindowManager;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
 /** Root-only live query of the actual WindowState under the original WMS lock.
  * Returns only a fixed classification, never private window titles or a cache. */
 public final class LiveFocusService extends Binder {
  public static final String NAME="kobo.lab.live_focus",TOKEN="kobo.lab.LiveFocus.v1";
  private final Object windows,lock;private final Field focus,owner,attrs,inputHandle,paused,visible;
  private Object previousWindow;private int previousKind=-1;private long generation;
- private static Field field(Class<?> c,String name)throws Exception {Field f=c.getDeclaredField(name);f.setAccessible(true);return f;}
+ private static Field field(Class<?> c,String name)throws NoSuchFieldException {Field f=c.getDeclaredField(name);f.setAccessible(true);return f;}
  private LiveFocusService(Object manager)throws Exception {
   windows=manager;lock=field(manager.getClass(),"mWindowMap").get(manager);
   focus=field(manager.getClass(),"mCurrentFocus");Class<?> state=Class.forName("com.android.server.wm.WindowState");
@@ -26,12 +30,44 @@ public final class LiveFocusService extends Binder {
   service.getMethod("addService",String.class,IBinder.class).invoke(null,NAME,new LiveFocusService(windows));
   System.out.println("ANDROID_LIVE_FOCUS_SERVICE_READY real_window_state=true root_only=true");
  }
+ // Use the published input regions and front-to-back window order used by
+ // InputMonitor. Special input consumers make this fast path ineligible.
+ private IBinder pinyinTarget(int x,int y)throws ReflectiveOperationException {
+  Class<?> manager=windows.getClass();
+  for(String name:new String[]{"mDragState","mTaskPositioner","mInputConsumer","mWallpaperInputConsumer"})
+   if(field(manager,name).get(windows)!=null)return null;
+  Object ime=field(manager,"mInputMethodWindow").get(windows);
+  if(ime==null)return null;
+  WindowManager.LayoutParams params=(WindowManager.LayoutParams)attrs.get(ime);
+  if(params.type!=WindowManager.LayoutParams.TYPE_INPUT_METHOD ||
+     !"com.android.inputmethod.pinyin".equals(params.packageName))return null;
+  Method list=manager.getMethod("getDefaultWindowListLocked");
+  List<?> ordered=(List<?>)list.invoke(windows);
+  Class<?> handleType=inputHandle.getType();
+  Field region=field(handleType,"touchableRegion"),flags=field(handleType,"layoutParamsFlags");
+  Field channel=field(owner.getDeclaringClass(),"mInputChannel");
+  for(int i=ordered.size()-1;i>=0;i--){
+   Object window=ordered.get(i),handle=inputHandle.get(window);
+   if(handle==null || channel.get(window)==null || !visible.getBoolean(handle))continue;
+   int f=flags.getInt(handle);
+   if((f & WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)!=0)continue;
+   int nonModal=WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+   boolean inside=((Region)region.get(handle)).contains(x,y);
+   if((f & nonModal)!=0 && !inside)continue;
+   if(window!=ime || !inside || paused.getBoolean(handle))return null;
+   return ((IInterface)field(owner.getDeclaringClass(),"mClient").get(ime)).asBinder();
+  }
+  return null;
+ }
  @Override protected boolean onTransact(int code,Parcel data,Parcel reply,int flags)throws RemoteException {
   if(Binder.getCallingUid()!=0)throw new SecurityException("Root input adapter only");
   if(code==IBinder.INTERFACE_TRANSACTION){reply.writeString(TOKEN);return true;}
-  if(code!=IBinder.FIRST_CALL_TRANSACTION && code!=IBinder.FIRST_CALL_TRANSACTION+1)return super.onTransact(code,data,reply,flags);
-  data.enforceInterface(TOKEN);if(data.dataAvail()!=0)throw new IllegalArgumentException("Unexpected focus query arguments");
-  int result=0;long stamp;
+  if(code<IBinder.FIRST_CALL_TRANSACTION || code>IBinder.FIRST_CALL_TRANSACTION+2)return super.onTransact(code,data,reply,flags);
+  boolean hitTest=code==IBinder.FIRST_CALL_TRANSACTION+2;
+  data.enforceInterface(TOKEN);
+  int x=hitTest?data.readInt():0,y=hitTest?data.readInt():0;
+  if(data.dataAvail()!=0)throw new IllegalArgumentException("Unexpected focus query arguments");
+  int result=0;long stamp;IBinder target=null;
   try{synchronized(lock){
    Object window=focus.get(windows);
    Object handle=window==null?null:inputHandle.get(window);
@@ -53,7 +89,15 @@ public final class LiveFocusService extends Binder {
     generation++;previousWindow=window;previousKind=result;
    }
    stamp=generation;
+   if(hitTest && result>0 && result<4){
+    try{target=pinyinTarget(x,y);}catch(ReflectiveOperationException unavailable){
+     // An incompatible runtime stays on the ordinary gesture path.
+    }
+   }
   }}catch(IllegalAccessException e){throw new IllegalStateException("Live focus field unavailable",e);}
-  reply.writeNoException();reply.writeInt(result);if(code==IBinder.FIRST_CALL_TRANSACTION+1)reply.writeLong(stamp);return true;
+  reply.writeNoException();reply.writeInt(result);
+  if(code!=IBinder.FIRST_CALL_TRANSACTION)reply.writeLong(stamp);
+  if(hitTest)reply.writeStrongBinder(target);
+  return true;
  }
 }

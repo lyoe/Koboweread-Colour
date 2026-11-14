@@ -16,15 +16,28 @@ public final class LiveFocusClient {
  }
  public static final class Snapshot {
   public final int kind;public final long generation;
-  Snapshot(int k,long g){kind=k;generation=g;}
+  public final IBinder pinyinWindow;
+  Snapshot(int k,long g,IBinder window){kind=k;generation=g;pinyinWindow=window;}
  }
  public Snapshot snapshot()throws Exception {
+  return snapshot(false,0,0);
+ }
+ public Snapshot touchTarget(int x,int y)throws Exception {
+  return snapshot(true,x,y);
+ }
+ private Snapshot snapshot(boolean hitTest,int x,int y)throws Exception {
   Parcel request=Parcel.obtain(),reply=Parcel.obtain();try{
    request.writeInterfaceToken("kobo.lab.LiveFocus.v1");
-   if(!service.transact(IBinder.FIRST_CALL_TRANSACTION+1,request,reply,0))throw new SecurityException("Focus lease unavailable");
+   if(hitTest){request.writeInt(x);request.writeInt(y);}
+   int code=IBinder.FIRST_CALL_TRANSACTION+(hitTest?2:1);
+   if(!service.transact(code,request,reply,0)){
+    if(hitTest)return snapshot();
+    throw new SecurityException("Focus lease unavailable");
+   }
    reply.readException();int kind=reply.readInt();long generation=reply.readLong();
+   IBinder window=hitTest?reply.readStrongBinder():null;
    if(kind<0||kind>4||generation<=0||reply.dataAvail()!=0)throw new SecurityException("Invalid focus lease");
-   return new Snapshot(kind,generation);
+   return new Snapshot(kind,generation,window);
   }finally{request.recycle();reply.recycle();}
  }
 

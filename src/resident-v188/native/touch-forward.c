@@ -78,6 +78,8 @@ static int test_swipe_frame(struct test_swipe *s,struct input_event *ev){
 static double now(void){struct timespec t;clock_gettime(CLOCK_MONOTONIC,&t);return t.tv_sec+t.tv_nsec/1e9;}
 static int send_event(int fd,int action,int x,int y,unsigned *sequence){
  uint32_t words[]={htonl(0x4b545031),htonl(action),htonl(x),htonl(y),htonl(++*sequence)},reply;
+ if(action==1 && access("/mnt/onboard/.adds/kobo-android-lab/fast-v188/ime-trace-enabled",F_OK)==0)
+  printf("IME_LATENCY host_up_ms=%.0f seq=%u\n",now()*1000,*sequence);
  size_t offset=0;
  while(offset<sizeof(words)){
   ssize_t n=send(fd,(char*)words+offset,sizeof(words)-offset,MSG_NOSIGNAL);

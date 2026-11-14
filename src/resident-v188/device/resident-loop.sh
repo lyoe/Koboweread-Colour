@@ -94,14 +94,14 @@ scan_log(){
 # 阅读优化 page in the launcher (2026-11-11, docs/1.9.7版本.md "启动器：阅读优化"):
 # the launcher cannot see the SD card, so the current settings are written to
 # $marker_dir/tuning (and, once per session, tuning-start: what this session
-# runs with). Its one request, set-<12 x y|n>-<c|r|t>, carries the whole wanted
+# runs with). Its one request, set-<13 x y|n>-<c|r|t>, carries the whole wanted
 # state in tune_all order plus the display profile (both versions' launchers
 # share the first ten positions; switches this version does not have, i.e. not in
 # tune_names, are neither listed nor touched); the files are switched
 # at once and take effect at the next start. restart / compile end this
 # session and start relaunch.sh, which compiles the odex first if asked and
 # starts the session again (WeRead opens by itself, as at every start).
-tune_all='syncthrottle markusers chapterprefetch bookprefetch fontcache skia segdict seglow poollow zram idle-suspend page-wipe'
+tune_all='syncthrottle markusers chapterprefetch bookprefetch fontcache skia segdict seglow poollow zram idle-suspend page-wipe aosp-pinyin'
 tune_names=$tune_all
 tune_state(){ # file
  tf=$base/fast-v188;tp=reagl-text
@@ -109,8 +109,8 @@ tune_state(){ # file
  case "$tp" in classic|reagl|reagl-text) :;; *) tp=reagl-text;;esac
  {
   for n in $tune_names;do
-   if [ "$n" = page-wipe ];then
-    if [ -e "$tf/page-wipe-enabled" ];then echo "$n 1";else echo "$n 0";fi
+   if [ "$n" = page-wipe ] || [ "$n" = aosp-pinyin ];then
+    if [ -e "$tf/$n-enabled" ];then echo "$n 1";else echo "$n 0";fi
    elif [ -e "$tf/$n-disabled" ];then echo "$n 0"
    else echo "$n 1"
    fi
@@ -124,7 +124,7 @@ tune_state(){ # file
 }
 tune_set(){ # yynyy...-t
  w=${1%-*};d=${1##*-};tf=$base/fast-v188;i=0
- ok=1;case ${#w} in 10|11|12) :;; *) ok=0;; esac
+ ok=1;case ${#w} in 10|11|12|13) :;; *) ok=0;; esac
  case "$w" in *[!yn]*) ok=0;;esac
  case "$d" in c|r|t) :;; *) ok=0;;esac
  [ $ok = 1 ] || { echo "RESIDENT_TUNE_REJECTED $1";return 0; }
@@ -132,8 +132,8 @@ tune_set(){ # yynyy...-t
   v=$(echo "$w" | cut -c$((i+1)));i=$((i+1))
   [ -n "$v" ] || break
   case " $tune_names " in *" $n "*) :;; *) continue;;esac
-  if [ "$n" = page-wipe ];then
-   if [ "$v" = y ];then : > "$tf/page-wipe-enabled";else rm -f "$tf/page-wipe-enabled";fi
+  if [ "$n" = page-wipe ] || [ "$n" = aosp-pinyin ];then
+   if [ "$v" = y ];then : > "$tf/$n-enabled";else rm -f "$tf/$n-enabled";fi
    continue
   fi
   if [ "$v" = y ];then [ ! -e "$tf/$n-disabled" ] || { rm -f "$tf/$n-disabled";echo "RESIDENT_TUNE $n=1"; }
@@ -172,7 +172,7 @@ start_input_helper(){
  CLASSPATH=/lab/native-resolution/weread-process-entry.dex:/lab/install-framework-probe.dex KOBO_VM_SHIM=1 "$root/lab/legacy-exec" "$root" /system/bin/app_process32 -Xnorelocate -Xnoimage-dex2oat -Xnodex2oat /system/bin WeReadInteractiveInput resident > "$root/lab/touch-probe.log" 2>&1 &
  touch_java_pid=$!
  poll_until 300 'grep -q ANDROID_TOUCH_PROBE_WINDOW_READY "$root/lab/touch-probe.log" || ! kill -0 "$touch_java_pid" 2>/dev/null' || :
- grep -q ANDROID_TOUCH_PROBE_WINDOW_READY "$root/lab/touch-probe.log" || { echo RESIDENT_INPUT_HELPER_NOT_READY;return 114; }
+ grep -q ANDROID_TOUCH_PROBE_WINDOW_READY "$root/lab/touch-probe.log" || { echo RESIDENT_INPUT_HELPER_NOT_READY;cat "$root/lab/touch-probe.log";return 114; }
 }
 # DNS health check through the session's proxy, in the background so a switch
 # never waits for it. Repeated failures also trip the proxy's public fallback.

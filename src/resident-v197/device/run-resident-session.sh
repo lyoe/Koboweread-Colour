@@ -419,6 +419,26 @@ res_bind "$probe" "$root/lab/install-framework-probe.dex"
 res_bind KoboProbe-resident.apk "$root/system/app/KoboProbe/KoboProbe.apk"
 res_bind host-default-network-resident "$root/lab/host-default-network"
 res_bind touch-forward-resident "$root/lab/native-resolution/touch-forward"
+# Scan the optional IME as a system APK only during enabled sessions.
+ime_dir=$root/system/app/PinyinIME
+rm -f "$ime_dir/PinyinIME.apk" "$ime_dir/lib/arm/libjni_pinyinime.so"
+if [ -e "$fast/aosp-pinyin-enabled" ];then
+ if res_sha_ok PinyinIME.apk && res_sha_ok libjni_pinyinime.so && res_sha_ok pinyin-process-broker;then
+  mkdir -p "$ime_dir/lib/arm"
+  chmod 0755 "$ime_dir" "$ime_dir/lib" "$ime_dir/lib/arm"
+  : > "$ime_dir/lib/arm/libjni_pinyinime.so"
+  res_bind libjni_pinyinime.so "$ime_dir/lib/arm/libjni_pinyinime.so"
+  : > "$ime_dir/PinyinIME.apk"
+  res_bind PinyinIME.apk "$ime_dir/PinyinIME.apk"
+  res_bind pinyin-process-broker "$root/lab/install-process-broker"
+  echo RESIDENT_AOSP_PINYIN_BOUND
+ else echo RESIDENT_AOSP_PINYIN_ARTIFACTS_MISSING;fi
+fi
+rm -f "$root/data/local/tmp/kobo-ime-trace"
+if [ -e "$fast/ime-trace-enabled" ];then
+ : > "$root/data/local/tmp/kobo-ime-trace"
+ chmod 0444 "$root/data/local/tmp/kobo-ime-trace"
+fi
 echo RESIDENT_COMPONENTS_BOUND
 
 # Codex's display shim rebuilt to export only ioctl (the original also exports

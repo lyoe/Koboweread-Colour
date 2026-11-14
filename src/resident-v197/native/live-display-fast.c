@@ -65,6 +65,29 @@ static int take_page_wipe(void){
  return direction=='p'?-1:direction=='n'?1:0;
 }
 
+/* A live IME window can redraw its cursor without any typing. */
+static int keyboard_visible(void){
+ const char *path="/tmp/kobo-android-runtime/data/user_de/0/com.android.inputmethod.pinyin/files/kobo-keyboard-visible";
+ int fd=open(path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW|O_NONBLOCK);
+ if(fd<0)return 0;
+ char pid_text[16]={0};
+ ssize_t size=read(fd,pid_text,sizeof(pid_text)-1);
+ close(fd);
+ if(size<=0)return 0;
+ char *end;
+ long pid=strtol(pid_text,&end,10);
+ if(*end || pid<=1 || pid>2147483647L)return 0;
+ char proc[64];
+ snprintf(proc,sizeof(proc),"/proc/%ld/cmdline",pid);
+ fd=open(proc,O_RDONLY|O_CLOEXEC);
+ if(fd<0)return 0;
+ static const char ime[]="com.android.inputmethod.pinyin";
+ char name[sizeof(ime)];
+ size=read(fd,name,sizeof(name));
+ close(fd);
+ return size==sizeof(name) && !memcmp(name,ime,sizeof(name));
+}
+
 static int open_regular(const char *path,off_t bytes){
  int fd=open(path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW);struct stat st;
  if(fd<0)return -1;
@@ -143,9 +166,9 @@ static void lut_gray(unsigned char *gray,const unsigned char lut[256]){
 }
 /* Bounding box of pixels that differ from the previous frame; 0 if none.
  * Horizontal edges are widened to multiples of 8 for the EPDC. */
-static int changed_rect(const unsigned char *a,const unsigned char *b,int *x,int *y,int *w,int *h){
+static int changed_rect(const unsigned char *a,const unsigned char *b,int *x,int *y,int *w,int *h,int start,int end){
  int top=-1,bottom=-1,left=WIDTH,right=-1;
- for(int r=0;r<HEIGHT;r++){
+ for(int r=start;r<end;r++){
   const unsigned char *ra=a+(size_t)r*WIDTH,*rb=b+(size_t)r*WIDTH;
   if(!memcmp(ra,rb,WIDTH))continue;
   if(top<0)top=r;
@@ -159,6 +182,29 @@ static int changed_rect(const unsigned char *a,const unsigned char *b,int *x,int
  left&=~7;right=(right|7)<WIDTH?(right|7):WIDTH-1;
  *x=left;*y=top;*w=right-left+1;*h=bottom-top+1;return 1;
 }
+/* Keep disjoint keyboard, candidate and editor changes from forming one
+ * large update. Submit the candidate band first, then the other regions. */
+static int submit_typing_bands(int fb,const unsigned char *gray,unsigned char *previous,FBInkConfig config){
+ const int bounds[][2]={{HEIGHT/10,HEIGHT*3/5},{HEIGHT*3/5,HEIGHT},{0,HEIGHT/10}};
+ int rectangles[3][4], count=0, area=0;
+ for(int i=0;i<3;i++){
+  int *r=rectangles[count];
+  if(!changed_rect(gray,previous,&r[0],&r[1],&r[2],&r[3],bounds[i][0],bounds[i][1]))continue;
+  if(r[3]>HEIGHT/6)return 0;
+  area+=r[2]*r[3];
+  count++;
+ }
+ if(count<2 || area>PIXELS/6)return 0;
+ config.wfm_mode=WFM_DU;config.halign=NONE;config.valign=NONE;
+ for(int i=0;i<count;i++){
+  int x=rectangles[i][0],y=rectangles[i][1],w=rectangles[i][2],h=rectangles[i][3];
+  for(int row=0;row<h;row++)
+   memcpy(previous+(size_t)row*w,gray+(size_t)(y+row)*WIDTH+x,(size_t)w);
+  if(fbink_print_raw_data(fb,previous,w,h,(size_t)w*h,(short)x,(short)y,&config)<0)return -1;
+ }
+ return count;
+}
+
 /* KOReader's screen, kept for the restore at exit, is mostly white: hold it
  * run-length coded (runs of up to 255 equal bytes as count,value pairs)
  * while the bridge runs, about 2 MB less resident. Kept raw when coding does
@@ -285,7 +331,9 @@ int main(int argc,char **argv){
   uint32_t before[6],after[6];int st=read_state(state_fd,before);if(st<0)goto cleanup;
   if(st>0){busy_skipped++;continue;}
   int black_due=black_pending && now()>=black_deadline;
-  if((frames && before[5]==last_sequence && !refresh_pending && !black_due) || now()-updated<0.25)continue;
+  if(frames && before[5]==last_sequence && !refresh_pending && !black_due)continue;
+  int typing=frames && !refresh_pending && keyboard_visible();
+  if(now()-updated<(typing?0.05:0.25))continue;
   double seen=now();
   rgba=frames_map+(size_t)before[4]*WIDTH*4;
   luma_sig(rgba,gray,sig);
@@ -305,9 +353,13 @@ int main(int argc,char **argv){
   /* Remember this frame's signature (taken from bytes the state check above
    * proved were not republished meanwhile). */
 #define REMEMBER_FRAME() do{ memcpy(last_sig,sig,sizeof sig);last_valid=1; }while(0)
-  int rx=0,ry=0,rw=WIDTH,rh=HEIGHT,changed=frames?changed_rect(gray,previous,&rx,&ry,&rw,&rh):1;
+  int rx=0,ry=0,rw=WIDTH,rh=HEIGHT,changed=frames?changed_rect(gray,previous,&rx,&ry,&rw,&rh,0,HEIGHT):1;
   double diffed=now();
   if(frames && !changed && !refresh_pending){REMEMBER_FRAME();continue;}
+  /* While typing, skip isolated caret-sized changes in the search header.
+   * Keep the last painted frame for the next text or candidate update. */
+  if(typing && changed && ry+rh<=HEIGHT/10 && rw<=16 && rh<=HEIGHT/32)
+   continue;
 #if SCALE != 1
   for(int y=0;y<HEIGHT;y++)for(int x=0;x<WIDTH;x++){
    unsigned char v=gray[y*WIDTH+x];size_t at=(size_t)(y*SCALE)*(WIDTH*SCALE)+x*SCALE;
@@ -316,6 +368,7 @@ int main(int argc,char **argv){
 #endif
   double paint_begin=now();
   cfg.is_flashing=needs_full_refresh(frames,partials,now()-last_full,refresh_pending);
+  if(typing)cfg.is_flashing=false;
   cfg.wfm_mode=cfg.is_flashing?WFM_GC16:use_reagl?WFM_REAGL:WFM_AUTO;
   int direction=page_wipe && frames?take_page_wipe():0;
   int wiped=0;
@@ -330,13 +383,26 @@ int main(int argc,char **argv){
    }
   }
   int whole=cfg.is_flashing || !partial_enabled || !changed || (rw==WIDTH && rh==HEIGHT) || SCALE!=1;
-  if(wiped)submitted=0;
+  if(typing && !whole && !wiped && rh<=HEIGHT/7 && rw*rh<=PIXELS/8)
+   cfg.wfm_mode=WFM_DU;
+  int bands=0;
+  if(typing && !whole && !wiped && cfg.wfm_mode!=WFM_DU)
+   bands=submit_typing_bands(fb,gray,previous,cfg);
+  if(bands>0){
+   cfg.wfm_mode=WFM_DU;
+   printf("LIVE_DISPLAY_IME_BANDS count=%d sequence=%u\n",bands,before[5]);
+   submitted=0;
+  }else if(wiped)submitted=0;
   else if(whole){rx=0;ry=0;rw=WIDTH;rh=HEIGHT;submitted=fbink_print_raw_data(fb,scaled,WIDTH*SCALE,HEIGHT*SCALE,PHYSICAL_PIXELS,0,0,&cfg);}
   else{
    region=previous;
    for(int r=0;r<rh;r++)memcpy(region+(size_t)r*rw,gray+(size_t)(ry+r)*WIDTH+rx,(size_t)rw);
    FBInkConfig part=cfg;part.halign=NONE;part.valign=NONE;
    submitted=fbink_print_raw_data(fb,region,rw,rh,(size_t)rw*rh,(short)rx,(short)ry,&part);
+   if(submitted<0 && cfg.wfm_mode==WFM_DU){
+    cfg.wfm_mode=part.wfm_mode=use_reagl?WFM_REAGL:WFM_AUTO;
+    submitted=fbink_print_raw_data(fb,region,rw,rh,(size_t)rw*rh,(short)rx,(short)ry,&part);
+   }
   }
   if(submitted<0 && use_reagl && !cfg.is_flashing){
    printf("LIVE_DISPLAY_REAGL_SUBMIT_FAILED_FALLBACK_GC16 error=%d\n",submitted);
@@ -354,7 +420,7 @@ int main(int argc,char **argv){
   scaled=gray;
 #endif
   updated=paint_begin;frames++;
-  printf("LIVE_DISPLAY_FRAME frame=%u sequence=%u rgba_sig=%08x monotonic=%.3f paint_ms=%.1f seen=%.3f convert_ms=%.1f diff_ms=%.1f region=%d,%d,%dx%d waveform=%s\n",frames,last_sequence,hash,now(),(now()-paint_begin)*1000,seen,(converted-seen)*1000,(diffed-converted)*1000,rx,ry,rw,rh,cfg.wfm_mode==WFM_REAGL?"REAGL":cfg.wfm_mode==WFM_GC16?"GC16":"AUTO");
+  printf("LIVE_DISPLAY_FRAME frame=%u sequence=%u rgba_sig=%08x monotonic=%.3f paint_ms=%.1f seen=%.3f convert_ms=%.1f diff_ms=%.1f region=%d,%d,%dx%d waveform=%s\n",frames,last_sequence,hash,now(),(now()-paint_begin)*1000,seen,(converted-seen)*1000,(diffed-converted)*1000,rx,ry,rw,rh,cfg.wfm_mode==WFM_REAGL?"REAGL":cfg.wfm_mode==WFM_GC16?"GC16":cfg.wfm_mode==WFM_DU?"DU":"AUTO");
  }
  rc=frames?0:11;
 cleanup:

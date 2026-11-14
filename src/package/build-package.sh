@@ -63,6 +63,11 @@ log "probe app";mkdir -p "$w/probe"
 KOBO_JAVA_HOME=$jdk KOBO_ANDROID_JAR=$KOBO_TOOLS/android/android.jar KOBO_D8_JAR=$KOBO_TOOLS/android/d8.jar KOBO_AAPT2=$KOBO_TOOLS/android/aapt2 \
  KOBO_LAB_KEYSTORE=$key KOBO_BUILD_OUT=$w/probe sh "$top/upstream/codex-kobo-android/installation-prototype/build.sh" > "$w/probe.log" 2>&1
 r=$w/resident/artifacts
+if [ -n "${KOBO_PINYIN_SOURCE:-}" ];then
+ log "optional AOSP PinyinIME"
+ KOBO_BUILD_OUT=$w/pinyin KOBO_KEYSTORE=$key KOBO_PROBE_STORE_PASSWORD=$pass \
+  sh "$top/src/resident-v197/pinyin/build.sh" > "$w/pinyin.log" 2>&1
+fi
 
 # 3. Launcher files (BASE/...).
 h=$w/host;mkdir -p "$h/resident-$tag" "$h/fast-$tag/hwc-lib"
@@ -72,6 +77,9 @@ printf '30\n' > "$h/display-cadence";printf 'reagl-text\n' > "$h/display-profile
 R=$h/resident-$tag
 for f in KoboProbe-resident.apk dns-proxy-resident host-default-network-resident install-framework-probe-resident-$tag.dex live-display-resident \
  resident-dns-check resident-sched touch-forward-resident weread-app-entry-resident.dex weread-process-entry-resident.dex;do cp "$r/$f" "$R/$f";done
+if [ -n "${KOBO_PINYIN_SOURCE:-}" ];then
+ cp "$r/pinyin-process-broker" "$w/pinyin/PinyinIME.apk" "$w/pinyin/libjni_pinyinime.so" "$w/pinyin/PinyinIME.NOTICE" "$R/"
+fi
 cp "$w/tools/e2fsck" "$w/tools/tune2fs" "$w/tools/kobo-pageprefetch" "$R/"
 d=$top/src/resident-$tag/device
 for f in launch-resident.sh resident-ctl.sh run-resident-session.sh run-native-weread-resident.sh resident-loop.sh plugin-main-resident.lua \
@@ -96,6 +104,9 @@ grep -q 'name = "wereadkobo"' "$p" && grep -q 'items.weread_kobo' "$p" || { echo
 for f in KoboProbe-resident.apk boot-prefetch.list dns-proxy-resident host-default-network-resident install-framework-probe-resident-$tag.dex \
  kobo-pageprefetch live-display-resident resident-dns-check resident-loop.sh resident-sched run-native-weread-resident.sh touch-forward-resident \
  weread-process-entry-resident.dex weread-app-entry-resident.dex plugin-main-resident.lua e2fsck tune2fs;do sha256 "$R/$f" > "$R/$f.sha256";done
+if [ -n "${KOBO_PINYIN_SOURCE:-}" ];then
+ for f in pinyin-process-broker PinyinIME.apk libjni_pinyinime.so;do sha256 "$R/$f" > "$R/$f.sha256";done
+fi
 for f in animation-scales.dex audit-runtime-fds kobo-mkswap kobo-squeeze libkobo_fb-hwc.so libkobo_jit_config.so native-memory-watchdog-fast.sh \
  hwc-lib/hwcomposer.default.so;do sha256 "$F/$f" > "$F/$f.sha256";done
 

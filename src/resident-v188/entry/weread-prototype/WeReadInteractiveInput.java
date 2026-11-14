@@ -114,6 +114,23 @@ public final class WeReadInteractiveInput {
    return now==target;
   }catch(Throwable error){System.out.println("WEREAD_RESIDENT_ROTATION_FAILED "+error);return false;}
  }
+ private static void enableAospPinyin(Context context)throws Exception {
+  String id="com.android.inputmethod.pinyin/.PinyinIME";
+  android.view.inputmethod.InputMethodManager ime=(android.view.inputmethod.InputMethodManager)
+    context.getSystemService(Context.INPUT_METHOD_SERVICE);
+  for(android.view.inputmethod.InputMethodInfo info:ime.getInputMethodList()){
+   if(!id.equals(info.getId()))continue;
+   Class<?> sm=Class.forName("android.os.ServiceManager");
+   IBinder binder=(IBinder)sm.getMethod("getService",String.class).invoke(null,"input_method");
+   Class<?> type=Class.forName("com.android.internal.view.IInputMethodManager");
+   Object service=Class.forName(type.getName()+"$Stub").getMethod("asInterface",IBinder.class).invoke(null,binder);
+   type.getMethod("setInputMethodEnabled",String.class,boolean.class).invoke(service,id,true);
+   type.getMethod("setInputMethod",IBinder.class,String.class).invoke(service,null,id);
+   System.out.println("WEREAD_AOSP_PINYIN_SELECTED");
+   return;
+  }
+  System.out.println("WEREAD_AOSP_PINYIN_NOT_REGISTERED");
+ }
  public static void main(String[] args)throws Exception {
   // "resident": long-lived helper of the resident launcher session. It accepts
   // one host forwarder at a time, again after each background period.
@@ -133,6 +150,10 @@ public final class WeReadInteractiveInput {
   if(!"e4dd2f049941989ffafa45aef52eda9701372c27bc1708e89c217935140bfa1c".equals(cert.toString()))throw new SecurityException("Unexpected installed signer");
   long legacyBegin=SystemClock.uptimeMillis();String initial=focus();
   long legacyMs=SystemClock.uptimeMillis()-legacyBegin;
+  if(resident && new File("/system/app/PinyinIME/PinyinIME.apk").length()>0){
+   try{enableAospPinyin(context);}
+   catch(Exception failure){System.out.println("WEREAD_AOSP_PINYIN_FAILED "+failure);}
+  }
   final LiveFocusClient live=new LiveFocusClient();
   LiveFocusClient.Snapshot leaseReady=live.snapshot();
   System.out.println("WEREAD_FOCUS_LEASE_READY kind="+leaseReady.kind+" generation="+leaseReady.generation);
@@ -150,7 +171,7 @@ public final class WeReadInteractiveInput {
    System.out.println("WEREAD_HELPER_REQUESTS_READY");
   }
   System.out.println("ANDROID_TOUCH_PROBE_WINDOW_READY target=verified-weread uid=10007"+(resident?" resident=1 launcher_kind=4":""));
-  new Thread(new Runnable(){public void run(){do{boolean down=false,dropping=false;long downTime=0,gestureLease=0;int lastX=0,lastY=0;try{
+  new Thread(new Runnable(){public void run(){do{boolean down=false,dropping=false;long downTime=0,gestureLease=0;IBinder pinyinWindow=null;int lastX=0,lastY=0,downX=0,downY=0;try{
    try(LocalSocket client=server.accept()){
     if(client.getPeerCredentials().getUid()!=0)throw new SecurityException("Host root required");client.setSoTimeout(resident?0:(sessionSeconds+10)*1000);
     if(resident)System.out.println("WEREAD_RESIDENT_INPUT_CONNECTED");
@@ -201,18 +222,21 @@ public final class WeReadInteractiveInput {
      }
      if(x<0 || x>=width || y<0 || y>=height || action<0 || action>3 || (action==0?down:!down))throw new SecurityException("Invalid host gesture state");
      if(action==0){
-      boolean owned=false;long deadline=SystemClock.uptimeMillis()+1200;
-      do{LiveFocusClient.Snapshot target=live.snapshot();if(target.kind>0){owned=true;gestureLease=target.generation;break;}Thread.sleep(150);}while(SystemClock.uptimeMillis()<deadline);
+      pinyinWindow=null;boolean owned=false;long deadline=SystemClock.uptimeMillis()+1200;
+      do{LiveFocusClient.Snapshot target=resident?live.touchTarget(x,y):live.snapshot();if(target.kind>0){owned=true;gestureLease=target.generation;pinyinWindow=target.pinyinWindow;break;}Thread.sleep(150);}while(SystemClock.uptimeMillis()<deadline);
       dropping=!owned;
       if(dropping)System.out.println("WEREAD_INTERACTIVE_GESTURE_SKIPPED_NO_VERIFIED_FOCUS");
       else if(keyPending.get()){dropping=true;System.out.println("WEREAD_INTERACTIVE_GESTURE_SKIPPED_KEY_PENDING");}
       else if(gesturePending.get()){dropping=true;System.out.println("WEREAD_INTERACTIVE_GESTURE_SKIPPED_GESTURE_PENDING");}
-      else{System.out.println("WEREAD_INTERACTIVE_HUMAN_GESTURE_STARTED");downTime=SystemClock.uptimeMillis();}
+      else{System.out.println("WEREAD_INTERACTIVE_HUMAN_GESTURE_STARTED");downTime=SystemClock.uptimeMillis();downX=x;downY=y;}
      }
      if(action!=0 && !dropping){
-      LiveFocusClient.Snapshot target=live.snapshot();
+      LiveFocusClient.Snapshot target=pinyinWindow==null?live.snapshot():live.touchTarget(downX,downY);
       if(!TouchLeasePolicy.same(gestureLease,target.kind,target.generation)){
        dropping=true;System.out.println("WEREAD_GESTURE_SKIPPED_WINDOW_PAUSED_OR_REPLACED");
+      }else if(pinyinWindow!=null && !pinyinWindow.equals(target.pinyinWindow)){
+       cancelOwned(input,inject,live,gestureLease,downTime,lastX,lastY);
+       dropping=true;
       }
      }
      if(dropping){
@@ -221,7 +245,13 @@ public final class WeReadInteractiveInput {
       // ACK 2 means deliberately not injected, never application acceptance.
       out.writeInt(2);out.flush();continue;
      }
-     if(action==1 && gestureWait){
+     boolean traceUp=action==1 && new File("/data/local/tmp/kobo-ime-trace").exists();
+     if(traceUp)
+      System.out.println("IME_LATENCY adapter_up_ms="+SystemClock.uptimeMillis()+" seq="+sequence);
+     // Keep keyboard DOWN/UP in this socket thread's order. WAIT_FOR_RESULT
+     // still checks dispatch acceptance, without gating the next keyboard tap
+     // on a finish signal from the IME UI thread.
+     if(action==1 && gestureWait && pinyinWindow==null){
       // Policy acceptance is not waited for here: the forwarder gets ACK 1
       // at once, as before; a rejected or timed-out UP is only logged.
       final MotionEvent up=TouchEvents.create(downTime,SystemClock.uptimeMillis(),action,x,y);
@@ -247,6 +277,8 @@ public final class WeReadInteractiveInput {
       down=action==0 || action==2;dropping=down;
       out.writeInt(3);out.flush();continue;
      }
+     if(traceUp && pinyinWindow!=null)
+      System.out.println("IME_LATENCY keyboard_result_ms="+SystemClock.uptimeMillis()+" seq="+sequence);
      down=action==0 || action==2;lastX=x;lastY=y;
      if(action==1){try(PrintWriter record=new PrintWriter("/lab/interactive-input-result.txt")){record.println("ANDROID_WEREAD_INTERACTIVE_GESTURE_DISPATCHED events="+sequence);}System.out.println("ANDROID_WEREAD_INTERACTIVE_GESTURE_DISPATCHED");}
      out.writeInt(1);out.flush();
