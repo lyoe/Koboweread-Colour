@@ -19,9 +19,11 @@
 | 阅读器 | Kobo Libra 2（N418），固件 **4.34.20097** 或 **4.38.23852**（其他固件安装时会被拒绝） |
 | 阅读器上的软件 | 已安装 KOReader（`/mnt/onboard/.adds/koreader`），可用空间约 2.3 GB |
 | 电脑 | macOS（Apple 芯片或 Intel）或 Linux x86_64，需联网 |
-| 微信读书 APK | 墨水屏版 1.9.7，sha256 `351105bda1ac58bc037c2d604982635a24018eb0f9b9964abeb5b84647565f1c`；或 1.8.8，sha256 `f0b8ab65f08162559e7f67920b069785748e197459489c4e73fdbd75cc3ccba4` |
+| 微信读书 APK | 自备与安装包对应的墨水屏版 1.9.7 或 1.8.8 |
 
 ## 快速开始
+
+项目发布版本从 **1.01** 开始编号。请在 仓库的 Releases 页面 下载与你的微信读书 APK 版本对应的安装包。
 
 ```sh
 sh bootstrap.sh                                         # 下载工具链和 Google 镜像（约 650 MB，需接受 Android SDK 许可）
@@ -42,7 +44,7 @@ sh src/package/build-package.sh 1.9.7
 | 目录 | 内容 |
 |---|---|
 | `bootstrap.sh` | 准备工具链（zig 0.13、JDK 17、Android 构建工具）和 Google 镜像，版本固定、全部校验 |
-| `src/package/` | 打包脚本：从源码、配方、Google 镜像和你的 APK 生成安装包 |
+| `src/package/` | 打包脚本：从源码、配方和 Google 镜像生成安装包 |
 | `recipe/v197`、`recipe/v188` | 镜像配方：每个文件来自哪里（Google 原文件、字节补丁、本项目文件、APK、构建产物），以及权限、属主和时间 |
 | `src/runtime/` | 运行层（镜像里的 `/lab`）构建，调用 `upstream/` 中 Codex 原型的构建脚本 |
 | `src/resident-v197/`、`src/resident-v188/` | 常驻启动器：会话脚本、显示桥、触摸转发、进程入口、KOReader 菜单 |
