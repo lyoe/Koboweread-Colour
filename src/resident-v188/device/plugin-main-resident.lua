@@ -536,7 +536,7 @@ function WeReadLab:addToMainMenu(items)
             } },
             { text = "重新编译加速文件（约一两分钟）", callback = function() self:compileOdex() end },
             { text = "操作说明", callback = function()
-                UIManager:show(InfoMessage:new { text = "竖屏、按钮位于右侧：上键下一页，下键上一页，短按松手翻页；设备倒过来拿时画面、触摸和按键随之翻转。\n\n任一翻页键按住1秒后松开：全刷清残影，不额外翻页。按住上翻页键5秒后松手：回到 Android 启动器。\n\n按键一侧的屏幕边缘上下滑动调亮度，另一侧调色温。\n\n同时按住两个翻页键两秒再松开、长按左上角两秒后松手，或按电源键并松手：返回 KOReader，Android 保留在后台，可正常休眠，再次从菜单进入无需重新启动。\n\n退出、重启 KOReader、连接 USB 存储、关机前会自动关闭 Android。", timeout = 30 })
+                UIManager:show(InfoMessage:new { text = "竖屏、按钮位于右侧：上键下一页，下键上一页，短按松手翻页；设备倒过来拿时画面、触摸和按键随之翻转。\n\n下一页键按住满 1 秒：立即全刷。上一页键按住满 3 秒后松手：截图保存到 Kobo 根目录（PGM 格式）。下一页键按住满 5 秒后松手：回到 Android 启动器。\n\n按键一侧的屏幕边缘上下滑动调亮度，另一侧调色温。\n\n同时按住两个翻页键两秒再松开、长按左上角两秒后松手，或按电源键并松手：返回 KOReader，Android 保留在后台，可正常休眠，再次从菜单进入无需重新启动。\n\n退出、重启 KOReader、连接 USB 存储、关机前会自动关闭 Android。", timeout = 30 })
             end },
             {
                 text = "查看运行状态",

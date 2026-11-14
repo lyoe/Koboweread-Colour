@@ -202,7 +202,7 @@ foreground_enter(){
  android_thaw
  if [ -n "${KOBO_RESIDENT_GOVERNOR:-}" ] && [ -w "$gov" ];then echo performance > "$gov";fi
  "$base/resident-v188/resident-sched" normal
- rm -f "$root/lab/interactive-session-finish" "$root/lab/interactive-refresh-request"
+ rm -f "$root/lab/interactive-session-finish" "$root/lab/interactive-refresh-request" "$root/lab/interactive-screenshot-request"
  KOBO_PAGE_WIPE=$page_wipe "$root/lab/native-resolution/live-display" 43260 "$display_profile" > "$root/lab/native-resolution/live-display.log" 2>&1 &
  bridge_pid=$!
  poll_until 80 'grep -q LIVE_DISPLAY_STARTED "$root/lab/native-resolution/live-display.log" || ! kill -0 "$bridge_pid" 2>/dev/null' || :
@@ -230,7 +230,7 @@ foreground_leave(){
   cat "$root/lab/native-resolution/live-display.log"
   grep -q LIVE_DISPLAY_FRAMEBUFFER_RESTORE_BYTES_MATCH "$root/lab/native-resolution/live-display.log" || { echo RESIDENT_DISPLAY_RESTORE_UNVERIFIED result=$bridge_result;resume_reader;return 73; }
  fi
- rm -f "$root/lab/interactive-session-finish" "$root/lab/interactive-refresh-request"
+ rm -f "$root/lab/interactive-session-finish" "$root/lab/interactive-refresh-request" "$root/lab/interactive-screenshot-request"
 }
 # Background freeze: while KOReader is on screen, every process of the
 # Android chroot is stopped (apps first) and continued on the way back

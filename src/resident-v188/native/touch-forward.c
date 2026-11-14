@@ -163,7 +163,7 @@ int main(int argc,char **argv){
 #endif
  // Declared before any goto cleanup: the cleanup path reads them.
  struct edge_light edge={0};struct test_swipe swipe={0};struct rotate_follow rot;rotate_init(&rot,resident);
- int key_fd=-1;struct forma_buttons physical_keys={0};unsigned page_keys=0,key_refreshes=0,key_exits=0,exit_holds=0;
+ int key_fd=-1;struct forma_buttons physical_keys={0};unsigned page_keys=0,key_refreshes=0,key_exits=0,exit_holds=0;int key_refreshed=0;
  if(interactive){
   key_fd=open_input_named("gpio-keys",O_RDONLY|O_NONBLOCK);
   char key_name[128]={0};unsigned long key_bits[(KEY_MAX+8*sizeof(long))/(8*sizeof(long))]={0};
@@ -171,7 +171,7 @@ int main(int argc,char **argv){
   const int required[]={193,194,116};for(unsigned k=0;k<3;k++)if(!((key_bits[required[k]/(8*sizeof(long))]>>(required[k]%(8*sizeof(long))))&1)){rc=24;goto cleanup;}
   if(ioctl(key_fd,EVIOCGRAB,1)<0 || ioctl(key_fd,EVIOCGKEY(sizeof(key_bits)),key_bits)<0){rc=24;goto cleanup;}
   unsigned held=0;for(unsigned k=0;k<3;k++)if((key_bits[required[k]/(8*sizeof(long))]>>(required[k]%(8*sizeof(long))))&1)held|=1u<<k;
-  forma_buttons_init(&physical_keys,held);puts("HOST_FORMA_BUTTONS_READY upper=next lower=previous single_hold_1s=refresh chord_hold_2s=exit power_release=exit");
+  forma_buttons_init(&physical_keys,held);puts("HOST_FORMA_BUTTONS_READY upper=next lower=previous next_hold_1s=refresh previous_release_3s=screenshot chord_hold_2s=exit power_release=exit");
  }
  const char *wipe_setting=getenv("KOBO_PAGE_WIPE");
  int page_wipe=resident && wipe_setting && !strcmp(wipe_setting,"1");
@@ -208,11 +208,18 @@ int main(int argc,char **argv){
    if(!swipe.active)printf("HOST_TEST_SWIPE_DONE at=%.3f\n",now());
    goto process;
   }
+  unsigned next_bit=rot.applied==2?2u:1u;
+  if(resident && physical_keys.pressed==next_bit && !physical_keys.blocked &&
+     !physical_keys.chord && !key_refreshed &&
+     now()-physical_keys.single_began[next_bit==1?0:1]>=1.0){
+   if(request_control("/tmp/kobo-android-runtime/lab/interactive-refresh-request","refresh\n")<0){rc=26;goto cleanup;}
+   key_refreshed=1;key_refreshes++;puts("HOST_FORMA_KEY_REFRESH_REQUESTED");
+  }
   struct pollfd pollers[2]={{.fd=fd,.events=POLLIN},{.fd=key_fd,.events=POLLIN}};int ready=poll(pollers,key_fd>=0?2:1,100);
   if(ready<0){if(errno==EINTR)continue;rc=14;break;}if(!ready){
    double tick=now();
    if(idle_timeout && tick-last_input>=idle_timeout && tick>=next_power_check &&
-      !button && !down && !hold.state && !edge.state){
+      !button && !down && !hold.state && !edge.state && !physical_keys.pressed){
     next_power_check=tick+5;
     char status[32];
     FILE *battery=fopen("/sys/class/power_supply/mc13892_bat/status","r");
@@ -261,13 +268,23 @@ int main(int argc,char **argv){
     if(key->type==EV_MSC && key->code==MSC_RAW){printf("HOST_GYRO value=0x%x\n",key->value);rotate_report(&rot,key->value,now());continue;}
     if(key->type!=EV_KEY)continue;
     last_input=now();
+    if(!physical_keys.pressed && key->value==1)key_refreshed=0;
     int action=forma_button_event(&physical_keys,key->code,key->value,now());
-    // Resident: the upper page key held 5 s then released opens the Android
-    // launcher (packet 6) instead of a full refresh.
-    if(resident && action==FORMA_REFRESH && key->code==193 && now()-physical_keys.single_began[0]>=5.0){
-     if(button || down || hold.state){puts("HOST_RESIDENT_HOME_SKIPPED_TOUCH_ACTIVE");continue;}
-     int result=send_event(sock,6,0,0,&sequence);if(result<0){rc=29;goto cleanup;}
-     printf("HOST_RESIDENT_KEY_HOME_RELEASED ack=%d\n",result);continue;
+    if(resident && action==FORMA_REFRESH){
+     int previous=(key->code==194)!=(rot.applied==2);
+     double held=now()-physical_keys.single_began[key->code==193?0:1];
+     if(previous && held>=3.0){
+      if(request_control("/tmp/kobo-android-runtime/lab/interactive-screenshot-request","screenshot\n")<0)
+       puts("HOST_FORMA_KEY_SCREENSHOT_REQUEST_FAILED");
+      else puts("HOST_FORMA_KEY_SCREENSHOT_REQUESTED");
+      continue;
+     }
+     if(previous)action=key->code==194?FORMA_PREVIOUS:FORMA_NEXT;
+     else if(held>=5.0){
+      if(button || down || hold.state){puts("HOST_RESIDENT_HOME_SKIPPED_TOUCH_ACTIVE");continue;}
+      int result=send_event(sock,6,0,0,&sequence);if(result<0){rc=29;goto cleanup;}
+      printf("HOST_RESIDENT_KEY_HOME_RELEASED ack=%d\n",result);continue;
+     }else if(key_refreshed)continue;
     }
     if(action==FORMA_EXIT){if(request_control("/tmp/kobo-android-runtime/lab/interactive-session-finish","reason=physical-keys\n")<0){rc=23;goto cleanup;}key_exits++;puts("HOST_FORMA_KEY_EXIT_RELEASED");goto cleanup;}
     if(action==FORMA_REFRESH){if(request_control("/tmp/kobo-android-runtime/lab/interactive-refresh-request","refresh\n")<0){rc=26;goto cleanup;}key_refreshes++;puts("HOST_FORMA_KEY_REFRESH_REQUESTED");}

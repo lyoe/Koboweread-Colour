@@ -42,6 +42,21 @@ static double now(void){struct timespec t;clock_gettime(CLOCK_MONOTONIC,&t);retu
 #include "../launcher-prototype/handoff-prototype/reading-lease.h"
 #include "refresh-policy.h"
 #include "display-quality.h"
+/* Save the bridge's last painted frame without allocating another framebuffer. */
+static void capture_requested_frame(const unsigned char *pixels,int have_frame){
+ const char *request="/tmp/kobo-android-runtime/lab/interactive-screenshot-request";
+ if(!have_frame || unlink(request)<0)return;
+ char path[]="/mnt/onboard/weread-screenshot-XXXXXX.pgm";
+ int fd=mkstemps(path,4);
+ if(fd<0){perror("LIVE_DISPLAY_SCREENSHOT_CREATE");return;}
+ FILE *out=fdopen(fd,"wb");
+ if(!out){close(fd);unlink(path);return;}
+ int ok=fprintf(out,"P5\n%d %d\n255\n",WIDTH,HEIGHT)>0 &&
+        fwrite(pixels,1,(size_t)WIDTH*HEIGHT,out)==(size_t)WIDTH*HEIGHT;
+ if(fclose(out)!=0)ok=0;
+ if(ok)printf("LIVE_DISPLAY_SCREENSHOT_SAVED %s\n",path);
+ else{unlink(path);puts("LIVE_DISPLAY_SCREENSHOT_WRITE_FAILED");}
+}
 static int consume_refresh_request(void){
  const char *path="/tmp/kobo-android-runtime/lab/interactive-refresh-request";
  int fd=open(path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW);if(fd<0)return errno==ENOENT?0:-1;
@@ -327,6 +342,7 @@ int main(int argc,char **argv){
  while(!interrupted && now()<deadline){
   struct timespec delay={0,poll_ns};nanosleep(&delay,NULL);
   if(independent&&!reading_valid())goto cleanup;
+  capture_requested_frame(previous,frames!=0);
   int request=consume_refresh_request();if(request<0)goto cleanup;if(request)refresh_pending=1;
   uint32_t before[6],after[6];int st=read_state(state_fd,before);if(st<0)goto cleanup;
   if(st>0){busy_skipped++;continue;}
