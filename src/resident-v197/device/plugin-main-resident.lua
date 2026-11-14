@@ -45,8 +45,8 @@ local messages = {
 }
 local phases = {
     runtime_begin = "正在准备运行环境。",
-    framework_begin = "正在初始化阅读环境。",
-    app_launch_begin = "正在校验并打开微信读书。",
+    framework_begin = "正在启动 Android 系统。",
+    app_launch_begin = "正在准备打开微信读书。",
     resident_home_ready = "Android 启动器已就绪，正在接入显示。",
     interactive_ready = "界面已显示，正在接入触控。",
 }
@@ -180,15 +180,12 @@ function WeReadLab:updateProgress()
         if controllerAlive() then self:closeProgress() end
         return
     end
-    local text = statusText() .. "\n\n点按可收起进度，启动会继续。"
-    local uptime = tonumber((read("/proc/uptime") or ""):match("^([%d%.]+)")) or 0
-    local bucket = math.floor(uptime / 10)
     local phase = (read(base .. "v197-launch.state") or ""):match("\nphase=([%a_]+)\n")
-    if self.progress_widget and self.progress_bucket == bucket and self.progress_phase == phase then return end
+    if self.progress_widget and self.progress_phase == phase then return end
     self:closeProgress()
-    self.progress_bucket, self.progress_phase = bucket, phase
+    self.progress_phase = phase
     self.progress_widget = InfoMessage:new {
-        text = text,
+        text = (phases[phase] or "正在准备运行环境。") .. "\n\n点按可收起提示，启动会继续。",
         dismiss_callback = function() self.progress_widget = nil; self.show_progress = false end,
     }
     UIManager:show(self.progress_widget)
@@ -277,7 +274,9 @@ function WeReadLab:holdAwake(grace)
         elseif self.launch_grace > 0 then
             self.launch_grace = self.launch_grace - 1
         else
+            local show_failure = self.show_progress and stage() == "failed"
             self:releaseAwake()
+            if show_failure then UIManager:show(InfoMessage:new { text = statusText() }) end
             local ok, err = pcall(syncFrontlight)
             if not ok then logger.warn("WeReadLab197 frontlight sync failed", err) end
             self:suspendIfRequested()
@@ -446,11 +445,10 @@ function WeReadLab:openResident(tuning)
     end
     self:holdAwake(5)
     self.show_progress = true
-    self.progress_bucket = nil
     self.progress_phase = nil
     os.execute("/usr/bin/setsid " .. base .. "fd-clean-exec /bin/sh " .. base .. "resident-v197/launch-resident.sh </dev/null >/dev/null 2>&1 &")
     self.launch_message = InfoMessage:new {
-        text = "正在启动 Android 启动器，首次通常需要一两分钟。\n\n之后在启动器里打开微信读书。返回 KOReader 时 Android 保留在后台，再次进入无需重新启动。\n\n请保持 Wi-Fi 连接。" .. (warnings(true) and ("\n\n" .. warnings(true)) or ""),
+        text = "正在准备运行环境。\n\n首次启动可能较慢，请保持 Wi-Fi 连接。" .. (warnings(true) and ("\n\n" .. warnings(true)) or ""),
         timeout = 12,
         dismiss_callback = function() if self.progress_widget == self.launch_message then self.progress_widget = nil; self.show_progress = false end end,
     }

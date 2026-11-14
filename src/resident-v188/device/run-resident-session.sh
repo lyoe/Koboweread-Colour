@@ -361,6 +361,7 @@ if [ "${bootnodebug:-0}" = 1 ];then
 fi
 imagedir=$root/lab/fast/oat-arm
 odex_mount=$odex
+odex_state=missing
 sha_ok(){ [ -f "$1" ] && [ -f "$1.sha256" ] && [ "$(sha256sum "$1" | awk '{print $1}')" = "$(cat "$1.sha256")" ]; }
 # Verified-hash cache for the two large files inside the image (84 MB odex,
 # 35 MB WebView library: ~7.4 s of hashing per start). A file whose inode,
@@ -380,6 +381,7 @@ if [ "${KOBO_FAST_ODEX:-1}" = 1 ] && [ ! -e "$fast/odex-disabled" ] && [ ! -e "$
  odex_mount=${odex%/base.odex}
  mount --bind "$imagedir" "$odex_mount"
  odex_bound=1
+ odex_state=active
  echo FAST_SPEED_PROFILE_APP_IMAGE_DIR_BOUND
 elif [ "${KOBO_FAST_ODEX:-1}" = 1 ] && [ ! -e "$fast/odex-disabled" ] && [ -f "$candidate" ] && [ -f "$candidate.sha256" ];then
  if sha_cached "$candidate" "$(cat "$candidate.sha256")";then
@@ -389,11 +391,14 @@ elif [ "${KOBO_FAST_ODEX:-1}" = 1 ] && [ ! -e "$fast/odex-disabled" ] && [ -f "$
   [ -e "$odex" ] || { mkdir -p "${odex%/*}";: > "$odex";chmod 0644 "$odex";echo FAST_ODEX_PLACEHOLDER_CREATED; }
   mount --bind "$candidate" "$odex"
   odex_bound=1
+  odex_state=active
   echo FAST_SPEED_PROFILE_ODEX_BOUND
  else
+  odex_state=invalid
   echo FAST_SPEED_PROFILE_ODEX_HASH_MISMATCH_USING_ORIGINAL
  fi
 fi
+if [ "$odex_state" = missing ] && [ -s "$candidate" ];then odex_state=inactive;fi
 # Animation-scale helper dex, used by the fast inner script.
 if [ -f "$fast/animation-scales.dex" ] && [ "$(sha256sum "$fast/animation-scales.dex" | awk '{print $1}')" = "$(cat "$fast/animation-scales.dex.sha256")" ];then
  mkdir -p "$root/lab/fast";cp "$fast/animation-scales.dex" "$root/lab/fast/animation-scales.dex";chmod 0644 "$root/lab/fast/animation-scales.dex"
@@ -513,4 +518,4 @@ native_selected=1
 chmod 0644 "$root/system/app/webview/lib/arm/libwebviewchromium.so"
 webview_time
 echo PATCHED_WEBVIEW_CPU_SURFACE_COMPONENT_SELECTED
-KOBO_RESIDENT_GOVERNOR="$old_gov" KOBO_WEBVIEW_SOFTWARE_SURFACE=1 "$root/lab/fd-clean-exec" /bin/sh "$root/lab/native-resolution/run-native-weread.sh"
+KOBO_ODEX_STATE="$odex_state" KOBO_RESIDENT_GOVERNOR="$old_gov" KOBO_WEBVIEW_SOFTWARE_SURFACE=1 "$root/lab/fd-clean-exec" /bin/sh "$root/lab/native-resolution/run-native-weread.sh"

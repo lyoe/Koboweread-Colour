@@ -24,15 +24,15 @@ public final class HomeActivity extends Activity {
  // until WeRead is displayed, e.g. the prewarm right after this launcher
  // appears (~20 s).
  private static final File STARTING=new File("/data/local/tmp/kobo-resident/weread-starting");
- private static final String STARTING_TEXT="微信读书正在启动（约 20 秒），完成后自动打开。";
- private static final String STARTING_PAUSED_TEXT="微信读书正在启动（约 20 秒），请稍候。";
+ private static final String STARTING_TEXT="正在打开微信读书，完成后自动打开。";
+ private static final String STARTING_PAUSED_TEXT="正在打开微信读书，请稍候。";
  private boolean openPending,homeResumed;private int pendingTicks;
  private final Handler handler=new Handler();
  // Press feedback: a pressed button turns black (white text) until its action
  // finishes, the launcher is shown again, or 3 s pass without a result. A
  // short flash could be missed by the e-ink refresh, so the state is held.
  private final java.util.List<TextView> buttons=new java.util.ArrayList<TextView>();
- private TextView openButton;
+ private TextView openButton, accelerationStatus;
  private static void look(TextView b,boolean pressed){
   if(b==null)return;
   GradientDrawable frame=new GradientDrawable();frame.setColor(pressed?Color.BLACK:Color.WHITE);frame.setStroke(4,Color.BLACK);frame.setCornerRadius(12);
@@ -62,19 +62,36 @@ public final class HomeActivity extends Activity {
  }
  private void residentLayout(){
   tuningShown=false;buttons.clear();
-  LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setBackgroundColor(Color.WHITE);root.setPadding(48,72,48,48);
-  TextView title=new TextView(this);title.setText("Android 启动器");title.setTextSize(30);title.setTextColor(Color.BLACK);root.addView(title);
-  status=new TextView(this);status.setTextSize(18);status.setTextColor(Color.BLACK);status.setPadding(0,24,0,0);root.addView(status);
+  ScrollView screen=new ScrollView(this);screen.setBackgroundColor(Color.WHITE);
+  LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(48,48,48,48);
+  screen.addView(root);
+  text(root,"微信读书",32,0);
+  status=text(root,"",20,16);
   openButton=button(root,"打开微信读书",new View.OnClickListener(){public void onClick(View v){openWeRead();}});
   button(root,"阅读优化",new View.OnClickListener(){public void onClick(View v){tuningLayout();}});
-  button(root,"返回 KOReader（Android 后台保留）",new View.OnClickListener(){public void onClick(View v){request("background","正在返回 KOReader…");}});
-  button(root,"关闭 Android 并返回 KOReader",new View.OnClickListener(){public void onClick(View v){request("shutdown","正在关闭 Android…");}});
-  TextView help=new TextView(this);help.setTextSize(16);help.setTextColor(Color.BLACK);help.setPadding(0,48,0,0);
-  help.setText("任何界面按住当前的下一页键 5 秒后松开：回到这个启动器。\n\n两个翻页键同时按住 2 秒后松开：回到这个启动器。\n\n长按左上角 2 秒后松开、或按电源键：返回 KOReader，Android 保留在后台。\n\n从 KOReader 菜单再次进入时无需重新启动 Android。");
-  root.addView(help);setContentView(root);
+  accelerationStatus=text(root,"",18,20);
+  button(root,"返回 KOReader",new View.OnClickListener(){public void onClick(View v){request("background","正在返回 KOReader…");}});
+  button(root,"关闭 Android",new View.OnClickListener(){public void onClick(View v){request("shutdown","正在关闭 Android…");}});
+  text(root,"双键按住 2 秒后松手，可返回启动器。",18,24);
+  setContentView(screen);
  }
-
- private void residentStatus(){status.setText(openPending||STARTING.isFile()?STARTING_TEXT:VERIFIED.isFile()?"微信读书已在后台，可直接打开。":"Android 已就绪。");}
+ private void residentStatus(){
+  boolean starting=openPending||STARTING.isFile();
+  boolean ready=VERIFIED.isFile();
+  status.setText(starting?STARTING_TEXT:ready?"微信读书已就绪":"Android 已就绪");
+  openButton.setText(ready&&!starting?"继续阅读":"打开微信读书");
+  accelerationStatus.setText(accelerationText(readTuning(TUNING)));
+ }
+ private static String accelerationText(Map<String,String> tuning){
+  if(tuning==null)return "加速状态暂未就绪";
+  String state=tuning.get("acceleration"), compile=tuning.get("compile");
+  boolean failed=compile!=null&&!compile.startsWith("none")&&!compile.startsWith("0 ");
+  if("active".equals(state))return failed?"上次编译未完成，已有加速文件正在使用":"加速文件已加载";
+  if("invalid".equals(state))return "加速文件校验失败，可重新编译";
+  if("inactive".equals(state))return "加速文件本次未加载";
+  if("missing".equals(state))return failed?"上次编译未完成，可重新编译":"尚未编译加速文件";
+  return "加速状态暂不可用";
+ }
  // 阅读优化 (2026-11-11, docs/1.9.7版本.md "启动器：阅读优化"): WeRead tuning
  // switches, display profile, restart and odex compile. The host keeps the
  // current settings in TUNING (and what this session started with in
@@ -169,6 +186,7 @@ public final class HomeActivity extends Activity {
   back.setClickable(true);back.setOnClickListener(new View.OnClickListener(){public void onClick(View v){residentLayout();residentStatus();}});head.addView(back);
   root.addView(head);
   tuneStatus=text(root,cur==null?"暂时读不到当前设置，请重启 Android 后再试。":"点按切换，立即保存；重启微信读书后生效。",15,16);
+  text(root,accelerationText(cur),18,16);
   text(root,"",6,0);line(root);
   idleChoice=null;
   if(cur!=null){
@@ -206,7 +224,7 @@ public final class HomeActivity extends Activity {
   if(c==null||c.startsWith("none"))return "";
   String[] p=c.split(" ");
   if(p.length>=4&&"0".equals(p[0]))return "\n上次编译："+p[3].replace('_',' ')+"，成功，"+p[1]+" MB，用时 "+p[2]+" 秒。";
-  return "\n上次编译"+(p.length>=4?"（"+p[3].replace('_',' ')+"）":"")+"没有完成，原来的加速文件仍在用。";
+  return "\n上次编译"+(p.length>=4?"（"+p[3].replace('_',' ')+"）":"")+"没有完成。";
  }
  private static int idleSeconds(Map<String,String> tuning){
   String value=tuning.get("idle-suspend-seconds");

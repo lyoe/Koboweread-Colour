@@ -121,6 +121,7 @@ tune_state(){ # file
    fi
   done
   echo "display $tp"
+  echo "acceleration ${KOBO_ODEX_STATE:-unknown}"
   echo "idle-suspend-seconds $(idle_timeout)"
   cl=$base/resident-v188/compile-menu.log;cc=$(sed -n 's/^COMPILE_MENU_DONE code=\([0-9]*\).*/\1/p' "$cl" 2>/dev/null | tail -n 1)
   if [ -n "$cc" ];then
