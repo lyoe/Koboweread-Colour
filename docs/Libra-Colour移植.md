@@ -1,5 +1,7 @@
 # Kobo Libra Colour 移植（Koboweread-Colour）
 
+[English](libra-colour-port.md) | **简体中文**
+
 本分支在 [Koboweread](https://github.com/scokyfei/Koboweread) 的基础上，把微信读书 1.9.7 的 Android 7 运行环境移植到 **Kobo Libra Colour（N428）**。非官方项目，与腾讯、乐天 Kobo、Google 均无关联。
 
 ## 适用范围
@@ -40,7 +42,7 @@
 
 ```sh
 KOBO_ACCEPT_ANDROID_SDK_LICENSE=1 sh bootstrap.sh
-sh src/kmod-mtk/build.sh            # 需要 Docker；生成 kernels/4.9.77/
+sh src/kmod-mtk/build.sh            # 可选，需要 Docker；重新生成 kernels/4.9.77/
 sh src/package/build-package.sh 1.9.7
 ```
 
@@ -60,5 +62,5 @@ sha256 fae543b19c935024d5f51ac0d42df00bc6ebb5de2fc197b51bb3131e3b16707d
 
 ## 测试工具
 
-- `src/kmod-mtk/test/binder32-smoke.c`：检查 ashmem，以及协议 7 的 binder 能否在两个进程之间完成一次真实收发。
+- `src/kmod-mtk/test/binder32-smoke.c`：检查 ashmem、协议 7 的 binder 能否在两个进程之间完成一次真实收发，以及 epoll + `BINDER_THREAD_EXIT` + 关闭。
 - `src/kmod-mtk/test/hwprobe.c`：只读，列出输入设备的坐标范围和按键码，以及帧缓冲参数。

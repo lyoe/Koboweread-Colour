@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
-**Koboweread-Colour** is a fork of [scokyfei/Koboweread](https://github.com/scokyfei/Koboweread). It adds **Kobo Libra Colour** support to the original project, which targets the Kobo Libra 2. Porting details (in Chinese): [docs/Libra-Colour移植.md](docs/Libra-Colour移植.md).
+**Koboweread-Colour** is a fork of [scokyfei/Koboweread](https://github.com/scokyfei/Koboweread). It adds **Kobo Libra Colour** support to the original project, which targets the Kobo Libra 2. Porting details: [docs/libra-colour-port.md](docs/libra-colour-port.md).
 
 The project runs the original WeRead e-ink app (微信读书墨水屏版) on a Kobo through a KOReader plugin:
 - The runtime is a minimal Android 7 (chroot). It does **not** modify the Kobo's system, firmware or library.
@@ -49,7 +49,7 @@ KOBO_ACCEPT_ANDROID_SDK_LICENSE=1 sh bootstrap.sh       # toolchain and Google i
 sh src/package/build-package.sh 1.9.7
 ```
 
-- The resulting `releases/wereadkobo-1.9.7-DATE-local.zip` contains the KOReader plugin `wereadkobo.koplugin`. Installation steps (in Chinese): [docs/构建与安装.md](docs/构建与安装.md).
+- The resulting `releases/wereadkobo-1.9.7-DATE-local.zip` contains the KOReader plugin `wereadkobo.koplugin`. Installation steps: [docs/build-and-install.md](docs/build-and-install.md).
 - Name the WeRead APK `weread-1.9.7.apk` and put it in the `wereadkobo.koplugin` folder, next to `main.lua`. The package contains neither the WeRead APK nor any native library extracted from it.
 - The Libra Colour kernel modules are already in `kernels/4.9.77/`. To rebuild them, run `sh src/kmod-mtk/build.sh` (needs Docker).
 - On newer macOS releases, the `objcopy` bundled with zig 0.13 fails to link. The build script then falls back to `llvm-objcopy` (`brew install llvm`), or set `KOBO_OBJCOPY`.
@@ -79,7 +79,7 @@ sh src/package/build-package.sh 1.9.7
 | `kernels/` | Kernel modules verified on devices: one set for each Libra 2 firmware (binder, ashmem, zram, …) and one for the Libra Colour (`4.9.77`; it uses the kernel's own ashmem and zram). Sources and patches of the Libra 2 modules: `upstream/codex-kobo-android/module-prototype/` and `src/kmod/` |
 | `upstream/codex-kobo-android/` | Sources and build scripts of the first port (the Codex prototype) |
 | `third_party/` | FBInk (upstream v1.25.0-544-gded92fa5, with Libra Colour support; GPL-3.0, trimmed), AOSP headers (Apache-2.0) |
-| `docs/` | Build and installation notes, and the Libra Colour porting notes (in Chinese) |
+| `docs/` | Build and installation notes, and the Libra Colour porting notes (English and Simplified Chinese) |
 
 ## Known limitations
 

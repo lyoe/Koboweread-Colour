@@ -79,7 +79,7 @@ sh src/package/build-package.sh 1.9.7
 | `kernels/` | 已在实机验证的内核模块：Libra 2 的两种固件各一套（binder、ashmem、zram 等），Libra Colour 一套（`4.9.77`；ashmem 和 zram 用内核自带的）。Libra 2 模块的源码与补丁见 `upstream/codex-kobo-android/module-prototype/` 和 `src/kmod/` |
 | `upstream/codex-kobo-android/` | 最初移植（Codex 原型）的源码和构建脚本 |
 | `third_party/` | FBInk（上游 v1.25.0-544-gded92fa5，支持 Libra Colour；GPL-3.0，已精简）、AOSP 头文件（Apache-2.0） |
-| `docs/` | 构建与安装说明，以及 Libra Colour 移植说明 |
+| `docs/` | 构建与安装说明，以及 Libra Colour 移植说明（英文和简体中文） |
 
 ## 已知限制
 
