@@ -1,101 +1,101 @@
-# 在 Kobo Libra 2 / Libra Colour 上运行微信读书（Android 7 运行环境）
+# WeRead on the Kobo Libra 2 / Libra Colour (Android 7 runtime)
 
-*Run the WeRead e-ink app (微信读书墨水屏版) on a Kobo Libra 2 or Libra Colour next to KOReader, in a small Android 7 environment built from Google's official system image, this repository and your own copy of the APK.*
+**English** | [简体中文](README.zh-CN.md)
 
-**Koboweread-Colour** 是 [scokyfei/Koboweread](https://github.com/scokyfei/Koboweread) 的分支，在原项目（Kobo Libra 2）的基础上增加了 **Kobo Libra Colour** 的支持。移植细节见 [docs/Libra-Colour移植.md](docs/Libra-Colour移植.md)。
+**Koboweread-Colour** is a fork of [scokyfei/Koboweread](https://github.com/scokyfei/Koboweread). It adds **Kobo Libra Colour** support to the original project, which targets the Kobo Libra 2. Porting details (in Chinese): [docs/Libra-Colour移植.md](docs/Libra-Colour移植.md).
 
-这个项目通过 KOReader 插件，在 Kobo 上运行原版微信读书墨水屏 APK：
-- 运行环境是一个精简的 Android 7（chroot），**不改动** Kobo 的系统、固件和书库；
-- 显示由墨水屏专用的桥接程序完成，支持翻页键、触摸、前光调节、正倒翻转；
-- 原项目针对 Libra 2（512 MB 内存、单核）做了一系列速度和内存优化，Libra Colour 沿用同一套。
+The project runs the original WeRead e-ink app (微信读书墨水屏版) on a Kobo through a KOReader plugin:
+- The runtime is a minimal Android 7 (chroot). It does **not** modify the Kobo's system, firmware or library.
+- The display goes through a bridge built for e-ink, with page keys, touch, frontlight control and upside-down rotation.
+- The original project tuned speed and memory for the Libra 2 (512 MB RAM, single core); the Libra Colour uses the same set.
 
-本仓库**不包含**任何 Google 系统文件、腾讯的 APK 或个人数据：
-- Google 的 Android 7.0 ARM 系统镜像由构建脚本从 Google 官方地址下载，使用前需要你接受 Android SDK 许可；
-- 微信读书 APK 需要你自己提供；
-- 我们对 Google 文件的改动是三个很小的字节补丁，补丁前后都会核对哈希。
+This repository contains **no** Google system files, no Tencent APK and no personal data:
+- Google's Android 7.0 ARM system image is downloaded by the build scripts from Google's official servers. You need to accept the Android SDK License to use it.
+- You supply the WeRead APK yourself.
+- Our changes to Google's files are three small byte patches, with hashes checked before and after.
 
-## 适用范围
+## Supported devices
 
-| 项目 | Kobo Libra 2 | Kobo Libra Colour |
+| | Kobo Libra 2 | Kobo Libra Colour |
 |---|---|---|
-| 型号 | N418 | N428 |
-| 固件 | **4.34.20097** 或 **4.38.23852** | **4.42.23303** |
-| 微信读书 | 墨水屏版 1.9.7 或 1.8.8 | 墨水屏版 1.9.7 |
-| 状态 | 原项目在实机上验证过；本分支改过的公共部分还没在 Libra 2 上测试（见“已知限制”） | 本分支在实机上验证过：安装、登录、显示、触摸、按键 |
+| Model | N418 | N428 |
+| Firmware | **4.34.20097** or **4.38.23852** | **4.42.23303** |
+| WeRead | e-ink edition 1.9.7 or 1.8.8 | e-ink edition 1.9.7 |
+| Status | Verified on a device by the original project. The shared parts changed in this fork have not been tested on a Libra 2 yet (see Known limitations). | Verified on a device in this fork: installation, login, display, touch, keys |
 
-其他固件的内核没有对应的模块，安装时会被拒绝。
+Other firmware versions have no matching kernel modules, so the installer refuses them.
 
-共同要求：
-- 阅读器上已安装 KOReader（`/mnt/onboard/.adds/koreader`），可用空间约 2.3 GB；
-- 电脑：macOS（Apple 芯片或 Intel）或 Linux x86_64，需联网；重新编译 Libra Colour 的内核模块还需要 Docker。
+Common requirements:
+- KOReader installed on the reader (`/mnt/onboard/.adds/koreader`), about 2.3 GB free space.
+- A computer running macOS (Apple silicon or Intel) or Linux x86_64, with internet access. Rebuilding the Libra Colour kernel modules also needs Docker.
 
-## 获取微信读书 APK
+## Getting the WeRead APK
 
-官网 [ink.qq.com](https://ink.qq.com) 只提供最新版。1.9.7 可以从腾讯的官方下载服务器获取：
+The official site [ink.qq.com](https://ink.qq.com) only offers the latest version. Version 1.9.7 is still on Tencent's official download server:
 
 ```
 https://download.weread.qq.com/pkg/105/releases/1.9.7.10244588_900.apk
 sha256 fae543b19c935024d5f51ac0d42df00bc6ebb5de2fc197b51bb3131e3b16707d
 ```
 
-这是官方渠道 900 的包，和原项目作者用的那份 1.9.7 是同一次构建，只有渠道信息不同，两份都能用。
+This is the official channel-900 build. It comes from the same build as the 1.9.7 the original author used; only the channel information differs. Both work.
 
-## 快速开始
+## Quick start
 
-原项目的 Release 安装包不支持 Libra Colour，请从源码构建：
+The original project's release packages do not support the Libra Colour. Build from source:
 
 ```sh
-KOBO_ACCEPT_ANDROID_SDK_LICENSE=1 sh bootstrap.sh       # 下载工具链和 Google 镜像（约 650 MB，表示你接受 Android SDK 许可）
+KOBO_ACCEPT_ANDROID_SDK_LICENSE=1 sh bootstrap.sh       # toolchain and Google image (about 650 MB; this accepts the Android SDK License)
 sh src/package/build-package.sh 1.9.7
 ```
 
-- 生成的 `releases/wereadkobo-1.9.7-日期-local.zip` 里有 KOReader 插件 `wereadkobo.koplugin`，安装方法见 [docs/构建与安装.md](docs/构建与安装.md)。
-- 安装时请把微信读书 APK 命名为 `weread-1.9.7.apk`，放到 `wereadkobo.koplugin` 目录中，与 `main.lua` 同级。安装包不含微信读书 APK 或从中提取的原生库。
-- Libra Colour 的内核模块已经在 `kernels/4.9.77/` 里。要自己重新编译，运行 `sh src/kmod-mtk/build.sh`（需要 Docker）。
-- 在较新的 macOS 上，zig 0.13 自带的 `objcopy` 无法链接，构建脚本会自动改用 `llvm-objcopy`（可用 `brew install llvm` 安装，也可以用 `KOBO_OBJCOPY` 指定）。
+- The resulting `releases/wereadkobo-1.9.7-DATE-local.zip` contains the KOReader plugin `wereadkobo.koplugin`. Installation steps (in Chinese): [docs/构建与安装.md](docs/构建与安装.md).
+- Name the WeRead APK `weread-1.9.7.apk` and put it in the `wereadkobo.koplugin` folder, next to `main.lua`. The package contains neither the WeRead APK nor any native library extracted from it.
+- The Libra Colour kernel modules are already in `kernels/4.9.77/`. To rebuild them, run `sh src/kmod-mtk/build.sh` (needs Docker).
+- On newer macOS releases, the `objcopy` bundled with zig 0.13 fails to link. The build script then falls back to `llvm-objcopy` (`brew install llvm`), or set `KOBO_OBJCOPY`.
 
-## 首次使用
+## First use
 
-1. **启动前先在 KOReader 里连好 Wi-Fi**。启动时没联网，微信读书会打不开。
-2. 在 KOReader 菜单 **工具 → 更多工具 → 微信读书 1.9.7（安装版）→ Android 启动器（常驻，热启动）** 启动。第一次要同意用户协议，再用微信扫码登录。
-3. 首次登录后，请保持 Wi-Fi 连接，耐心等待书架信息同步和书籍下载。首次打开书籍也可能比平时慢。
-4. 正常阅读一段时间后，在启动器的「阅读优化」里选择「重新编译加速文件并重启」。编译会利用这段时间记录的阅读运行数据，完成后自动重启微信读书。
+1. **Connect to Wi-Fi in KOReader before launching.** Without a network at launch, WeRead does not open.
+2. Launch from the KOReader menu: **Tools → More tools → 微信读书 1.9.7（安装版）→ Android 启动器（常驻，热启动）**. The first time, accept the user agreement, then log in by scanning the QR code with WeChat.
+3. After the first login, stay on Wi-Fi and let the bookshelf sync and books download. The first book you open may also be slower than usual.
+4. After reading for a while, choose 「重新编译加速文件并重启」 under 「阅读优化」 in the launcher. The compile uses the runtime data recorded while you read, then restarts WeRead.
 
-**从 Kobo 首页直接打开**：把 `src/resident-v197/device/nickelmenu-weread` 复制到 `/mnt/onboard/.adds/nm/weread`，需要先装好 [NickelMenu](https://github.com/pgaskin/NickelMenu)。之后 Kobo 首页的 NickelMenu 菜单里会出现“微信讀書”，点它会启动 KOReader，联网后自动打开微信读书。菜单名用繁体，是因为 Kobo 用英文界面时，简体的“读”“书”会显示成方块。
+**Open it from the Kobo home screen**: install [NickelMenu](https://github.com/pgaskin/NickelMenu), then copy `src/resident-v197/device/nickelmenu-weread` to `/mnt/onboard/.adds/nm/weread`. The NickelMenu menu on the Kobo home screen then shows 「微信讀書」. Tapping it starts KOReader and opens WeRead as soon as KOReader is online. The label uses traditional characters because, with an English Kobo UI, the simplified 读 and 书 show as boxes.
 
-**操作**：右侧上键是下一页，下键是上一页；按住下一页键 1 秒全屏刷新。沿右边缘（翻页键一侧）上下滑动调亮度，沿左边缘调色温。短按电源键回到 KOReader。
+**Controls**: the upper key turns to the next page, the lower key to the previous page; hold the next-page key for 1 second for a full refresh. Swipe up or down along the right edge (the page-key side) for brightness, along the left edge for warmth. A short press of the power key returns to KOReader.
 
-## 目录
+## Layout
 
-| 目录 | 内容 |
+| Path | Contents |
 |---|---|
-| `bootstrap.sh` | 准备工具链（zig 0.13、JDK 17、Android 构建工具）和 Google 镜像，版本固定、全部校验 |
-| `src/package/` | 打包脚本：从源码、配方和 Google 镜像生成安装包 |
-| `recipe/v197`、`recipe/v188` | 镜像配方：每个文件来自哪里（Google 原文件、字节补丁、本项目文件、APK、构建产物），以及权限、属主和时间 |
-| `src/runtime/` | 运行层（镜像里的 `/lab`）构建，调用 `upstream/` 中 Codex 原型的构建脚本 |
-| `src/resident-v197/`、`src/resident-v188/` | 常驻启动器：会话脚本、显示桥、触摸转发、进程入口、KOReader 菜单 |
-| `src/kmod-mtk/` | Libra Colour（联发科 MT8113，内核 4.9.77）的内核模块构建：协议 7 的 `binder32`、`kobo_madvise`、`kobo_pagecache`，以及测试工具 |
-| `src/`（其余） | 显示库、HWC、JIT 配置、zram 等加速组件，以及安装器 |
-| `kernels/` | 已在实机验证的内核模块：Libra 2 的两种固件各一套（binder、ashmem、zram 等），Libra Colour 一套（`4.9.77`；ashmem 和 zram 用内核自带的）。Libra 2 模块的源码与补丁见 `upstream/codex-kobo-android/module-prototype/` 和 `src/kmod/` |
-| `upstream/codex-kobo-android/` | 最初移植（Codex 原型）的源码和构建脚本 |
-| `third_party/` | FBInk（上游 v1.25.0-544-gded92fa5，支持 Libra Colour；GPL-3.0，已精简）、AOSP 头文件（Apache-2.0） |
-| `docs/` | 构建与安装说明，以及 Libra Colour 移植说明 |
+| `bootstrap.sh` | Prepares the toolchain (zig 0.13, JDK 17, Android build tools) and the Google image, at fixed versions, all checksummed |
+| `src/package/` | Packaging script: builds the installer from the sources, the recipes and the Google image |
+| `recipe/v197`, `recipe/v188` | Image recipes: where each file comes from (Google original, byte patch, this project, APK, build output), with permissions, owners and times |
+| `src/runtime/` | Runtime layer (`/lab` in the image), built with the Codex prototype scripts in `upstream/` |
+| `src/resident-v197/`, `src/resident-v188/` | Resident launcher: session scripts, display bridge, touch forwarding, process entry, KOReader menu |
+| `src/kmod-mtk/` | Kernel modules for the Libra Colour (MediaTek MT8113, kernel 4.9.77): protocol-7 `binder32`, `kobo_madvise`, `kobo_pagecache`, plus test tools |
+| `src/` (rest) | Display library, HWC, JIT configuration, zram and other speed-ups, and the installer |
+| `kernels/` | Kernel modules verified on devices: one set for each Libra 2 firmware (binder, ashmem, zram, …) and one for the Libra Colour (`4.9.77`; it uses the kernel's own ashmem and zram). Sources and patches of the Libra 2 modules: `upstream/codex-kobo-android/module-prototype/` and `src/kmod/` |
+| `upstream/codex-kobo-android/` | Sources and build scripts of the first port (the Codex prototype) |
+| `third_party/` | FBInk (upstream v1.25.0-544-gded92fa5, with Libra Colour support; GPL-3.0, trimmed), AOSP headers (Apache-2.0) |
+| `docs/` | Build and installation notes, and the Libra Colour porting notes (in Chinese) |
 
-## 已知限制
+## Known limitations
 
-- **Libra 2 上还没重新测试**：本分支升级了 FBInk，也改了 Libra 2 同样会用到的启动脚本、触摸转发和前光同步。这些改动按设计对 Libra 2 不该有影响，但还没在 Libra 2 上实际验证。Libra 2 用户如果更看重稳定，请先用 [原项目](https://github.com/scokyfei/Koboweread)。
-- **Libra Colour 只移植了 1.9.7**：1.8.8 的启动器没有改动。
-- **Libra Colour 上 REAGL 刷新模式没有生效**：目前用普通刷新模式，残影可能比 Libra 2 多。
-- **首次使用比作者的环境慢一些**：WeRead 的预编译代码（odex）要在你的设备上，根据实际阅读记录编译，尚未做成菜单项。用渠道 900 的 1.9.7 时，配方自带的启动加速记录对不上，第一次启动会再慢一点。
-- **Linux 构建**：由 GitHub Actions（Ubuntu）检查。完整打包目前在 macOS 上验证过。
-- **非官方项目**：与腾讯、乐天 Kobo、Google 均无关联。使用风险自负，请遵守微信读书的用户协议。
+- **Not re-tested on the Libra 2**: this fork updated FBInk and changed launch scripts, touch forwarding and frontlight syncing that the Libra 2 also uses. These changes are designed not to affect the Libra 2, but they have not been checked on one. Libra 2 users who prefer stability should use the [original project](https://github.com/scokyfei/Koboweread) for now.
+- **Only 1.9.7 is ported to the Libra Colour**: the 1.8.8 launcher is unchanged.
+- **REAGL refresh is not active on the Libra Colour**: the normal refresh mode is used, so ghosting may be stronger than on the Libra 2.
+- **First use is slower than in the author's setup**: WeRead's precompiled code (odex) has to be compiled on your device from your actual reading, and this is not a menu item yet. With the channel-900 1.9.7, the startup profile shipped in the recipe does not match, so the first start is a little slower still.
+- **Linux builds**: checked by GitHub Actions (Ubuntu). Full packaging has been verified on macOS so far.
+- **Unofficial project**: not affiliated with Tencent, Rakuten Kobo or Google. Use at your own risk and follow WeRead's user agreement.
 
-## 致谢
+## Acknowledgements
 
-- [scokyfei/Koboweread](https://github.com/scokyfei/Koboweread)：Libra 2 版本的原项目，本分支的全部基础；
-- [KOReader](https://github.com/koreader/koreader)、[FBInk](https://github.com/NiLuJe/FBInk)、[NickelMenu](https://github.com/pgaskin/NickelMenu)；
-- 乐天 Kobo 公开的 [Libra Colour 内核源码](https://github.com/kobolabs/Kobo-Reader/tree/master/hw/mt8113-libraC_vision7)。
+- [scokyfei/Koboweread](https://github.com/scokyfei/Koboweread): the original Libra 2 project and the foundation of this fork
+- [KOReader](https://github.com/koreader/koreader), [FBInk](https://github.com/NiLuJe/FBInk), [NickelMenu](https://github.com/pgaskin/NickelMenu)
+- Rakuten Kobo's published [Libra Colour kernel source](https://github.com/kobolabs/Kobo-Reader/tree/master/hw/mt8113-libraC_vision7)
 
-## 许可
+## License
 
-本项目以 GPL-3.0 发布（见 `LICENSE`）。第三方部分保留各自的许可，见 `third_party/README.md`。内核模块来自 Linux 内核源码，使用 GPL-2.0。
+This project is released under GPL-3.0 (see `LICENSE`). Third-party parts keep their own licenses, see `third_party/README.md`. Kernel modules come from the Linux kernel source and are GPL-2.0.
