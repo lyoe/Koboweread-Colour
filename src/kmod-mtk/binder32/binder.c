@@ -386,7 +386,8 @@ enum {
 	BINDER_LOOPER_STATE_EXITED      = 0x04,
 	BINDER_LOOPER_STATE_INVALID     = 0x08,
 	BINDER_LOOPER_STATE_WAITING     = 0x10,
-	BINDER_LOOPER_STATE_NEED_RETURN = 0x20
+	BINDER_LOOPER_STATE_NEED_RETURN = 0x20,
+	BINDER_LOOPER_STATE_POLL        = 0x40
 };
 
 struct binder_thread {
@@ -2332,7 +2333,7 @@ static int binder_thread_write(struct binder_proc *proc,
 			    (cmd == BC_INCREFS || cmd == BC_ACQUIRE)) {
 				ref = binder_get_ref_for_node(proc,
 					context->binder_context_mgr_node);
-				if (ref->desc != target) {
+				if (ref && ref->desc != target) {
 					binder_user_error("%d:%d tried to acquire reference to desc 0, got %d instead\n",
 						proc->pid, thread->pid,
 						ref->desc);
@@ -3143,7 +3144,27 @@ static int binder_free_thread(struct binder_proc *proc,
 	}
 	if (send_reply)
 		binder_send_failed_reply(send_reply, BR_DEAD_REPLY);
+
+	/*
+	 * CVE-2019-2215 (AOSP "ANDROID: binder: remove waitqueue when thread
+	 * exits."): if this thread used poll, remove its waitqueue from any
+	 * epoll structures holding it with POLLFREE before the thread is freed.
+	 * waitqueue_active() is safe here because the global binder lock is held.
+	 */
+	if ((thread->looper & BINDER_LOOPER_STATE_POLL) &&
+	    waitqueue_active(&thread->wait)) {
+		wake_up_poll(&thread->wait, POLLHUP | POLLFREE);
+	}
+
 	binder_release_work(&thread->todo);
+
+	/*
+	 * Avoid races between wake_up_poll() above and ep_remove_waitqueue()
+	 * called for other reasons (e.g. the epoll fd being closed), which
+	 * holds an RCU read lock.
+	 */
+	if (thread->looper & BINDER_LOOPER_STATE_POLL)
+		synchronize_rcu();
 	kfree(thread);
 	binder_stats_deleted(BINDER_STAT_THREAD);
 	return active_transactions;
@@ -3159,6 +3180,12 @@ static unsigned int binder_poll(struct file *filp,
 	binder_lock(__func__);
 
 	thread = binder_get_thread(proc);
+	if (!thread) {
+		binder_unlock(__func__);
+		return POLLERR;
+	}
+
+	thread->looper |= BINDER_LOOPER_STATE_POLL;
 
 	wait_for_proc_work = thread->transaction_stack == NULL &&
 		list_empty(&thread->todo) && thread->return_error == BR_OK;

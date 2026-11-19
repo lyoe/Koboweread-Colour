@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
@@ -27,6 +28,7 @@ _Static_assert(sizeof(struct btd) == 40, "btd");
 #define BINDER_WRITE_READ      _IOWR('b', 1, struct binder_write_read)
 #define BINDER_SET_MAX_THREADS _IOW('b', 5, uint32_t)
 #define BINDER_SET_CONTEXT_MGR _IOW('b', 7, int32_t)
+#define BINDER_THREAD_EXIT     _IOW('b', 8, int32_t)
 #define BINDER_VERSION         _IOWR('b', 9, struct binder_version)
 #define BC_TRANSACTION   _IOW('c', 0, struct btd)
 #define BC_REPLY         _IOW('c', 1, struct btd)
@@ -138,5 +140,19 @@ int main(int argc, char **argv) {
 	if (!WIFEXITED(st) || WEXITSTATUS(st)) { fprintf(stderr, "FAIL: client exited with status %d\n", st); return 1; }
 	puts("PASS: binder transaction ping -> pong between two processes");
 	close(fd);
+
+	/* --- epoll + BINDER_THREAD_EXIT + close: the sequence of CVE-2019-2215.
+	 * In this (pre-4.14) driver an idle thread polls on proc->wait, so this
+	 * checks that the POLLFREE/synchronize_rcu change does not break the
+	 * normal path; the vulnerable case is a thread polled while it has
+	 * thread work (thread->wait). --- */
+	fd = open_binder(dev);
+	int ep = epoll_create1(EPOLL_CLOEXEC); check(ep >= 0, "epoll_create");
+	struct epoll_event ev = { .events = EPOLLIN };
+	check(epoll_ctl(ep, EPOLL_CTL_ADD, fd, &ev) == 0, "epoll_ctl add");
+	int32_t dummy = 0; check(ioctl(fd, BINDER_THREAD_EXIT, &dummy) == 0, "thread exit");
+	struct epoll_event out; check(epoll_wait(ep, &out, 1, 0) >= 0, "epoll_wait after exit");
+	close(ep); close(fd);
+	puts("PASS: epoll + BINDER_THREAD_EXIT + close");
 	return 0;
 }
