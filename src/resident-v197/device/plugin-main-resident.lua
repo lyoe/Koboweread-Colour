@@ -336,9 +336,28 @@ function WeReadLab:onResume()
         end
     end)
 end
+-- Koboweread-Colour: "微信读书" on the Kobo home screen (NickelMenu, see
+-- nickelmenu-weread) leaves a one-shot request and starts KOReader; open the
+-- launcher once KOReader is up and online. A request older than two minutes
+-- (KOReader did not get this far last time) is dropped.
+local autostart_request = "/tmp/wereadkobo-autostart"
+local function takeAutostart()
+    local lfs = require("libs/libkoreader-lfs")
+    local made = lfs.attributes(autostart_request, "modification")
+    if not made then return false end
+    os.remove(autostart_request)
+    return os.time() - made <= 120
+end
 function WeReadLab:init()
     self.ui.menu:registerToMainMenu(self)
     if controllerAlive() and stage() ~= "background" then self:holdAwake(0) end
+    if takeAutostart() then
+        logger.info("WeReadLab197 autostart requested from the Kobo home screen")
+        UIManager:scheduleIn(1, function()
+            local NetworkMgr = require("ui/network/manager")
+            NetworkMgr:runWhenOnline(function() self:openResident() end)
+        end)
+    end
 end
 -- KOReader stays in memory, stopped, while Android runs (no swap, 507 MB).
 -- Drop its rendered-page cache and collect garbage first, so the memory goes
