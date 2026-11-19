@@ -24,6 +24,15 @@
 #include "forma-buttons.h"
 #include "../libra2-prototype/device-profile.h"
 static volatile sig_atomic_t stopped;
+/* Libra Colour (N428): the Elan panel's X axis runs the other way. KOReader's
+ * Kobo_monza has touch_mirrored_y (screen y = 1679 - raw X) where the Libra 2
+ * (Kobo_io) has none. Raw X is mirrored before kobo_touch_map. */
+static int touch_mirror_y;
+static int raw_x_mirror(int raw){return raw>=KOBO_TOUCH_MAX_X?0:KOBO_TOUCH_MAX_X-1-raw;}
+static int model_is(const char *prefix){
+ char b[16]={0};FILE *f=fopen("/mnt/onboard/.kobo/version","r");if(!f)return 0;
+ int ok=fgets(b,sizeof(b),f)&&!strncmp(b,prefix,strlen(prefix));fclose(f);return ok;
+}
 static unsigned skipped_events;
 static unsigned rejected_events;
 static int request_control(const char *path,const char *reason){
@@ -71,7 +80,7 @@ static int test_swipe_frame(struct test_swipe *s,struct input_event *ev){
  int x=s->x0+(s->x1-s->x0)*s->step/s->steps,y=s->y0+(s->y1-s->y0)*s->step/s->steps;
  TS_EV(EV_ABS,ABS_MT_SLOT,0);
  if(!s->step)TS_EV(EV_ABS,ABS_MT_TRACKING_ID,4242);
- TS_EV(EV_ABS,ABS_MT_POSITION_X,y*KOBO_FB_SCALE);TS_EV(EV_ABS,ABS_MT_POSITION_Y,x*KOBO_FB_SCALE);TS_EV(EV_SYN,SYN_REPORT,0);
+ TS_EV(EV_ABS,ABS_MT_POSITION_X,touch_mirror_y?raw_x_mirror(y*KOBO_FB_SCALE):y*KOBO_FB_SCALE);TS_EV(EV_ABS,ABS_MT_POSITION_Y,x*KOBO_FB_SCALE);TS_EV(EV_SYN,SYN_REPORT,0);
 #undef TS_EV
  s->step++;return n;
 }
@@ -120,6 +129,7 @@ int main(int argc,char **argv){
  int one_gesture=argc==3&&!strcmp(argv[2],"--one-gesture");if(argc==3&&!interactive&&!one_gesture)return 2;
  char *end;long seconds=strtol(argv[1],&end,10);if(*end || seconds<5 || seconds>(resident?43200:(long_session?1800:180)))return 2;
  if(close_inherited_fds()<0)return 3;setvbuf(stdout,NULL,_IOLBF,0);
+ touch_mirror_y=model_is("N428");
  int independent=access(HANDOFF_LEASE,F_OK)==0;
  struct reader readers[2]={{0}};
  if((independent&&!reading_valid())||(!independent&&find_readers(readers,'T')<0)){
@@ -199,7 +209,7 @@ int main(int argc,char **argv){
  if(resident)printf("HOST_ROTATE_READY follow=%s\n",rot.enabled?"upright,upside-down":"off");
  if(resident)printf("HOST_EDGE_LIGHT_READY brightness=%s warmth=%s\n",edge.path[0]?edge.path[0]:"off",edge.path[1]?edge.path[1]:"off");
 #ifdef KOBO_TARGET_LIBRA2
- puts("HOST_TOUCH_FORWARD_READY protocol=elan-type-b single-finger=1 axis-transform=swap-profile-scale-clamp");
+ printf("HOST_TOUCH_FORWARD_READY protocol=elan-type-b single-finger=1 axis-transform=swap-profile-scale-clamp%s\n",touch_mirror_y?"-mirror-y":"");
 #else
  puts("HOST_TOUCH_FORWARD_READY protocol=forma-snow single-finger=1 axis-transform=mirror-y-swap-divide-two");
 #endif
@@ -395,6 +405,7 @@ int main(int argc,char **argv){
     }
     if(blocked){exit_hold_cancel(&hold);if(edge.state==EDGE_PENDING)edge.state=EDGE_IDLE;else edge_end(&edge,now());blocked_frames++;if(mask&(mask-1))multi_frames++;if(down){if(send_event(sock,3,lastx,lasty,&sequence)<0){rc=19;goto cleanup;}down=0;}continue;}
     xraw=coords[current][0];yraw=coords[current][1];
+    if(touch_mirror_y)xraw=raw_x_mirror(xraw);
     int x,y;if(kobo_touch_map(xraw,yraw,&x,&y)<0){blocked=1;exit_hold_cancel(&hold);continue;}
     rotate_point(&rot,&x,&y);
     if(resident && !down && !hold.state && !edge.state)edge_begin(&edge,x,y,KOBO_FB_WIDTH,60*KOBO_EXIT_HOLD_SCALE,rot.applied==2,now());
