@@ -24,11 +24,17 @@
 | zram | 内核自带 `zram0` | 原脚本只在没有 `zram0` 时才加载模块，所以这一段自动跳过 |
 | 内核模块版本 | `CONFIG_MODVERSIONS=y`，不要求模块签名 | 用乐天 Kobo 公开的源码和设备上的 `/proc/config.gz` 编译内核目标文件，从中提取 CRC。`module_layout` 的 CRC 必须等于原厂 Wi-Fi 模块里的值 `0xa81081b3` |
 | 显示 | 联发科 hwtcon 显示驱动；帧缓冲 1264×1680、32 位色、每行 5056 字节，和 Libra 2 一致 | FBInk 升级到上游最新代码（v1.25.0-544，支持 Libra Colour） |
-| 触摸 | Elan Touchscreen，坐标范围 1680×1264，和 Libra 2 一致 | 不用改 |
+| 触摸 | Elan Touchscreen，坐标范围 1680×1264，和 Libra 2 一致，但 X 轴方向相反（KOReader 的 Kobo_monza 设了 `touch_mirrored_y`） | `touch-forward.c` 在 N428 上先把原始 X 换算成 `1679 − X` |
 | 按键 | 翻页键 193/194 和转屏信号在 `gpio-keys`，电源键 116 在单独的 `bd71828-pwrkey` | `touch-forward.c` 在 `gpio-keys` 没有 116 时，额外打开 `bd71828-pwrkey` |
 | 电池 | `bd71827_bat` | 先找 `bd71827_bat`，找不到再用 `mc13892_bat` |
 | 前光 | `mxc_msp430.0`（亮度 0–100），`lm3630a_led/color`（色温 0–10） | 和原代码一致 |
-| 微信读书 APK | 官方渠道 900 的 1.9.7：大小、原生库和作者用的那份一致，渠道字节不同 | 安装探针和预编译脚本同时接受两个摘要 |
+| 微信读书 APK | 官方渠道 900 的 1.9.7（渠道信息写在 classes10.dex 里，所以配方自带的启动加速记录对不上，只影响首次启动速度）：大小、原生库和作者用的那份一致，渠道字节不同 | 安装探针和预编译脚本同时接受两个摘要 |
+| 前光同步 | 灯关着时读数是 0 | 回到 KOReader 时，读数 0 表示关灯并保留原亮度；如果亮度和打开微信读书时一样，就不动 KOReader 的设置。原插件会把 0 当成亮度，Libra 2 上同样受影响 |
+| binder 安全 | anbox 的旧版 binder 驱动 | 补上 CVE-2019-2215（线程退出时用 POLLFREE 摘掉等待队列）和一处空指针检查 |
+
+## 从 Kobo 首页打开
+
+把 `src/resident-v197/device/nickelmenu-weread` 复制到 `/mnt/onboard/.adds/nm/weread`，NickelMenu 里就会多出“微信讀書”。点它会启动 KOReader，联网后自动打开微信读书。菜单名用繁体，是因为界面语言为英文时，Kobo 会用日文字体显示中文，日文字体里没有简体的“读”“书”。
 
 ## 构建
 
